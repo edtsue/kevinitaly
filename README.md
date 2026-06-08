@@ -1,4 +1,4 @@
-# Athens → Milan · Kevin & Son (June 2026)
+# Athens → Milan · Kevin & Jace (June 2026)
 
 A phone-first, single-file trip hub for a mythology-loving family trip:
 **Athens → Naples → Rome → Bologna → Milan**, 8–23 June 2026.

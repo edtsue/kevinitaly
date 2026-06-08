@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#0c4a6e" />
-<title>Athens → Milan · Kevin & Son</title>
+<title>Athens → Milan · Kevin & Jace</title>
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -67,18 +67,19 @@
 
 <!-- ====================== BOTTOM NAV ====================== -->
 <nav class="fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-stone-900/95 backdrop-blur border-t border-stone-200 dark:border-stone-800 nav-safe">
-  <div class="max-w-2xl mx-auto grid grid-cols-5">
-    <button data-nav="today"    class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">📍</span>Today</button>
-    <button data-nav="days"     class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">🗓️</span>Days</button>
-    <button data-nav="guide"    class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">🏛️</span>Guide</button>
-    <button data-nav="notes"    class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">📝</span>Notes</button>
-    <button data-nav="settings" class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">⚙️</span>Settings</button>
+  <div class="max-w-2xl mx-auto grid grid-cols-6">
+    <button data-nav="today"    class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium"><span class="text-xl">📍</span>Today</button>
+    <button data-nav="days"     class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium"><span class="text-xl">🗓️</span>Days</button>
+    <button data-nav="guide"    class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium"><span class="text-xl">🏛️</span>Guide</button>
+    <button data-nav="shopping" class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium"><span class="text-xl">🛍️</span>Shop</button>
+    <button data-nav="notes"    class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium"><span class="text-xl">📝</span>Notes</button>
+    <button data-nav="settings" class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium"><span class="text-xl">⚙️</span>Settings</button>
   </div>
 </nav>
 
 <script>
 /* =====================================================================
-   TRIP HUB — Athens → Milan (Kevin & son, Sep 2026)
+   TRIP HUB — Athens → Milan (Kevin & Jace, Jun 2026)
    Pure static: localStorage only. No Supabase, no Vercel, no API keys.
    ===================================================================== */
 
@@ -134,7 +135,7 @@ const TRIP = [
     sleep: 'Hotel in Plaka / Syntagma area (night 2/5)',
     transit: 'All on foot from Plaka. Buy the combo ticket online to skip the line; the same ticket covers the Acropolis, Agora, Hephaestus and Olympian Zeus for 5 days.',
     destinations: [
-      { name: 'Acropolis (book timed entry)', url: 'https://hhticket.gr/', note: 'For Kevin\'s son: the Erechtheion stands on the exact spot where Athena and Poseidon had their contest to win the city — she gave the olive tree and won.' },
+      { name: 'Acropolis (book timed entry)', url: 'https://hhticket.gr/', note: 'For Jace: the Erechtheion stands on the exact spot where Athena and Poseidon had their contest to win the city — she gave the olive tree and won.' },
       { name: 'Ancient Agora & Temple of Hephaestus', url: 'https://maps.google.com/?q=Temple+of+Hephaestus+Athens', note: 'A whole open-air ruined city centre. The Temple of Hephaestus (god of the forge and fire) is so intact you can picture its roof.' },
     ],
     soloTip: { bucket: 'mythology', title: 'Find the contest', body: 'On the Acropolis, look for the Erechtheion. Myth says Poseidon struck the rock and made a saltwater spring; Athena planted an olive tree. The gods judged the olive more useful — so the city is "Athens".' },
@@ -143,7 +144,7 @@ const TRIP = [
     day: 3, date: '2026-06-10', weekday: 'Wed', phase: 'athens', city: 'Athens', flag: '🦁',
     title: 'Day trip: Mycenae & Epidaurus',
     am: 'Drive into the Peloponnese (~1h30) to Mycenae, the gold-rich citadel of King Agamemnon who led the Greeks to Troy. Pass beneath the famous Lion Gate and duck inside the colossal beehive "Treasury of Atreus" tomb.',
-    pm: 'On to the Theatre of Epidaurus — a 2,300-year-old open-air theatre with acoustics so perfect you can hear a coin drop on the stage from the very top row (have the boy test it). Stop in seaside Nafplio for a late lunch before the drive back.',
+    pm: 'On to the Theatre of Epidaurus — a 2,300-year-old open-air theatre with acoustics so perfect you can hear a coin drop on the stage from the very top row (have Jace test it). Stop in seaside Nafplio for a late lunch before the drive back.',
     sleep: 'Hotel in Plaka / Syntagma area (night 3/5)',
     transit: 'Best as a pre-booked small-group day tour with driver — it loops Mycenae, Epidaurus and Nafplio in one go. Long but legendary day; snacks, water, hats.',
     destinations: [
@@ -176,7 +177,7 @@ const TRIP = [
       { name: 'Temple of Olympian Zeus', url: 'https://maps.google.com/?q=Temple+of+Olympian+Zeus+Athens', note: 'Covered by the Acropolis combo ticket. A 16th column blew down in an 1852 storm and still lies where it fell.' },
       { name: 'Temple of Poseidon, Cape Sounion', url: 'https://maps.google.com/?q=Temple+of+Poseidon+Sounion', note: 'Poseidon\'s sea-temple on a cliff. Legend says King Aegeus leapt from these rocks — giving the Aegean Sea its name.' },
     ],
-    soloTip: { bucket: 'shopping', title: 'Last Athens haul', body: 'Before leaving, hit Monastiraki/Pandrossou St for leather sandals (made to order in some shops), Karagiozis shadow puppets, and a komboloi (worry beads) for the boy.' },
+    soloTip: { bucket: 'shopping', title: 'Last Athens haul', body: 'Before leaving, hit Monastiraki/Pandrossou St for leather sandals (made to order in some shops), Karagiozis shadow puppets, and a komboloi (worry beads) for Jace.' },
   },
   {
     day: 6, date: '2026-06-13', weekday: 'Sat', phase: 'athens', city: 'Athens → Naples', flag: '✈️',
@@ -214,7 +215,7 @@ const TRIP = [
     transit: 'Direct regional train Napoli → Paestum (~1h15); temples are a short walk from the station. (Closer mythology alt: Cumae, cave of the prophetic Sibyl.)',
     destinations: [
       { name: 'Temples of Paestum', url: 'https://maps.google.com/?q=Paestum+temples', note: 'A Greek colony in Italy. The Temple of Neptune is one of the most complete Doric temples on earth — you can walk straight in among the columns.' },
-      { name: 'Via San Gregorio Armeno', url: 'https://maps.google.com/?q=Via+San+Gregorio+Armeno+Naples', note: 'Tiny lane crammed with nativity (presepe) artisans. Let the boy pick a hand-painted figurine — they\'ll even carve modern characters.' },
+      { name: 'Via San Gregorio Armeno', url: 'https://maps.google.com/?q=Via+San+Gregorio+Armeno+Naples', note: 'Tiny lane crammed with nativity (presepe) artisans. Let Jace pick a hand-painted figurine — they\'ll even carve modern characters.' },
     ],
     soloTip: { bucket: 'mythology', title: 'Greece, in Italy', body: 'Paestum was founded by Greek settlers around 600 BC and named for Poseidon ("Poseidonia"). Its temples are older than the Parthenon and far emptier — a mythology site without the queues.' },
   },
@@ -236,7 +237,7 @@ const TRIP = [
     day: 10, date: '2026-06-17', weekday: 'Wed', phase: 'rome', city: 'Rome', flag: '🏟️',
     title: 'Gladiators: Colosseum & Forum',
     am: 'The Colosseum at opening — picture 50,000 Romans roaring at gladiators and wild-animal hunts. An arena-floor or underground ticket lets you stand where the fighters waited.',
-    pm: 'Next door: the Roman Forum and Palatine Hill, the ruined heart of the empire — temples, the Senate, and the hill where Romulus supposedly founded Rome. Afterwards walk over to the Bocca della Verità (Mouth of Truth) and dare the boy to put his hand in the ancient stone face that "bites liars".',
+    pm: 'Next door: the Roman Forum and Palatine Hill, the ruined heart of the empire — temples, the Senate, and the hill where Romulus supposedly founded Rome. Afterwards walk over to the Bocca della Verità (Mouth of Truth) and dare Jace to put his hand in the ancient stone face that "bites liars".',
     sleep: 'Hotel near Pantheon / Trevi (night 2/3)',
     transit: 'Metro Line B to Colosseo. Buy the Colosseum + Forum + Palatine combo online with a timed slot — lines are brutal otherwise.',
     destinations: [
@@ -269,7 +270,7 @@ const TRIP = [
     trainBooked: { time: 'Rome → Bologna, ~2h10 high-speed' },
     destinations: [
       { name: 'Piazza Maggiore & Neptune Fountain', url: 'https://maps.google.com/?q=Fontana+del+Nettuno+Bologna', note: 'Giambologna\'s bronze Neptune commands the sea with his trident — a Renaissance take on the same god you met in Rome and at Sounion.' },
-      { name: 'Asinelli Tower', url: 'https://maps.google.com/?q=Torre+degli+Asinelli+Bologna', note: 'Bologna\'s tallest leaning tower, 498 steps to the top (book ahead). Great "we climbed it" bragging rights for the boy.' },
+      { name: 'Asinelli Tower', url: 'https://maps.google.com/?q=Torre+degli+Asinelli+Bologna', note: 'Bologna\'s tallest leaning tower, 498 steps to the top (book ahead). Great "we climbed it" bragging rights for Jace.' },
     ],
     soloTip: { bucket: 'food', title: 'It\'s ragù, not "bolognese"', body: 'The local sauce goes on flat tagliatelle, never spaghetti. Order "tagliatelle al ragù" and you\'ll get the real thing — slow-cooked meat sauce perfected over centuries.' },
   },
@@ -298,12 +299,12 @@ const TRIP = [
       { name: 'Duomo di Milano + Rooftop', url: 'https://www.duomomilano.it/en/', note: 'Climb among the marble spires and gargoyles; on a clear day you can see the Alps. The gold Madonnina crowns the highest spire.' },
       { name: 'Galleria Vittorio Emanuele II', url: 'https://maps.google.com/?q=Galleria+Vittorio+Emanuele+II+Milan', note: 'The world\'s oldest shopping arcade (1877). Tradition: put your heel on the bull mosaic and spin three times for luck.' },
     ],
-    soloTip: { bucket: 'shopping', title: 'Milan = the fashion city', body: 'Window-shop the "Quadrilatero della Moda" (Via Montenapoleone & around), or take the boy to La Rinascente department store by the Duomo — the rooftop food hall has a face-to-face Duomo view.' },
+    soloTip: { bucket: 'shopping', title: 'Milan = the fashion city', body: 'Window-shop the "Quadrilatero della Moda" (Via Montenapoleone & around), or take Jace to La Rinascente department store by the Duomo — the rooftop food hall has a face-to-face Duomo view.' },
   },
   {
     day: 15, date: '2026-06-22', weekday: 'Mon', phase: 'milan', city: 'Milan', flag: '🛍️',
     title: 'Sforza Castle, columns & shopping',
-    am: 'A full, relaxed Milan day. Roam Sforza Castle and its leafy Sempione Park — free, open courtyards and space for the boy to run. Then the Columns of San Lorenzo: 16 ancient Roman columns in a lively square, Milan\'s last surviving slice of the ancient world.',
+    am: 'A full, relaxed Milan day. Roam Sforza Castle and its leafy Sempione Park — free, open courtyards and space for Jace to run. Then the Columns of San Lorenzo: 16 ancient Roman columns in a lively square, Milan\'s last surviving slice of the ancient world.',
     pm: 'Afternoon for shopping and aperitivo: window-shop the Quadrilatero della Moda or hit La Rinascente by the Duomo, then a stroll along the Navigli canals for dinner and gelato.',
     sleep: 'Hotel near Duomo / Brera (night 2/2)',
     transit: 'All central and metro-linked (Cairoli for the castle, Porta Genova for Navigli). A great car-free walking day.',
@@ -311,7 +312,7 @@ const TRIP = [
       { name: 'Sforza Castle & Sempione Park', url: 'https://maps.google.com/?q=Castello+Sforzesco+Milan', note: 'A huge brick castle with free, open courtyards opening onto a big park — easy and relaxed for a family afternoon.' },
       { name: 'Columns of San Lorenzo', url: 'https://maps.google.com/?q=Colonne+di+San+Lorenzo+Milano', note: '16 ancient Roman columns (~3rd century) in a buzzing square — Milan\'s little echo of the ancient world.' },
     ],
-    soloTip: { bucket: 'shopping', title: 'Milan = the fashion city', body: 'Window-shop the "Quadrilatero della Moda" (Via Montenapoleone), or take the boy to La Rinascente by the Duomo — its rooftop food hall has a face-to-face cathedral view.' },
+    soloTip: { bucket: 'shopping', title: 'Milan = the fashion city', body: 'Window-shop the "Quadrilatero della Moda" (Via Montenapoleone), or take Jace to La Rinascente by the Duomo — its rooftop food hall has a face-to-face cathedral view.' },
   },
   {
     day: 16, date: '2026-06-23', weekday: 'Tue', phase: 'milan', city: 'Milan', flag: '🛫',
@@ -335,7 +336,7 @@ const SEED_TIPS = [
   { day: 2, bucket: 'mythology', title: 'Spot the Caryatids', body: 'Six carved maidens hold up the Erechtheion porch instead of plain columns. Five you see are weatherproof copies — the worn originals are kept safe under cover.', neighborhood: 'Acropolis', url: 'https://maps.google.com/?q=Erechtheion+Athens' },
   { day: 2, bucket: 'mythology', title: 'Owls = Athena', body: 'Athena\'s sacred animal was the owl, symbol of wisdom. You\'ll spot owls carved on ancient ruins and on every souvenir in town.', neighborhood: 'Acropolis', url: null },
   { day: 1, bucket: 'food',      title: 'Loukoumades', body: 'Greek honey doughnuts — warm fried dough balls drizzled with honey and cinnamon (or chocolate). The ultimate kid dessert.', neighborhood: 'Plaka', url: null },
-  { day: 2, bucket: 'food',      title: 'Freddo culture', body: 'Greeks live on iced coffee — a freddo espresso/cappuccino. Order the boy a freddo "decaf" or a frozen Greek yogurt with honey.', neighborhood: 'Anywhere', url: null },
+  { day: 2, bucket: 'food',      title: 'Freddo culture', body: 'Greeks live on iced coffee — a freddo espresso/cappuccino. Order Jace a freddo "decaf" or a frozen Greek yogurt with honey.', neighborhood: 'Anywhere', url: null },
   { day: 5, bucket: 'shopping',  title: 'Leather sandals', body: 'Several Plaka workshops make Greek-style leather sandals to fit on the spot — a comfy, classic, wearable souvenir.', neighborhood: 'Plaka / Pandrossou St', url: null },
   { day: 3, bucket: 'shopping',  title: 'Monastiraki flea', body: 'Sunday morning is the big flea market — antiques, coins, worry beads, vintage. Great for a small treasure-hunt budget.', neighborhood: 'Monastiraki', url: null },
   // Naples
@@ -343,13 +344,13 @@ const SEED_TIPS = [
   { day: 8, bucket: 'mythology', title: 'Older than the Parthenon', body: 'Paestum\'s Temple of Hera was built around 550 BC — a century before the Parthenon. Walk right up and run your hand along columns 2,500+ years old.', neighborhood: 'Paestum', url: 'https://maps.google.com/?q=Paestum+temples' },
   { day: 6, bucket: 'food',      title: 'Pizza fritta', body: 'Naples\' fried pizza — dough stuffed with ricotta/tomato, then deep-fried. Cheap, messy, and a local obsession.', neighborhood: 'Centro Storico', url: null },
   { day: 8, bucket: 'food',      title: 'Sfogliatella vs babà', body: 'Two Naples pastries to settle the debate: sfogliatella (crunchy shell, citrus ricotta) vs babà (rum-soaked sponge). Try both.', neighborhood: 'Centro Storico', url: null },
-  { day: 8, bucket: 'shopping',  title: 'Make-your-own presepe', body: 'On San Gregorio Armeno, some workshops will paint a nativity figure to order — even as a mini caricature of the boy.', neighborhood: 'San Gregorio Armeno', url: null },
+  { day: 8, bucket: 'shopping',  title: 'Make-your-own presepe', body: 'On San Gregorio Armeno, some workshops will paint a nativity figure to order — even as a mini caricature of Jace.', neighborhood: 'San Gregorio Armeno', url: null },
   // Rome
   { day: 9, bucket: 'mythology', title: 'Coin in the Trevi', body: 'Throw with your right hand over your left shoulder: one coin = you\'ll return to Rome. The fountain pulls in ~€1.5M a year, donated to charity.', neighborhood: 'Trevi', url: null },
   { day: 10, bucket: 'mythology', title: 'Mouth of Truth', body: 'At Santa Maria in Cosmedin, put your hand in the Bocca della Verità — legend says it bites off the hands of liars. A fun, quick photo stop.', neighborhood: 'Bocca della Verità', url: 'https://maps.google.com/?q=Bocca+della+Verita+Rome' },
   { day: 9, bucket: 'food',      title: 'Supplì', body: 'Rome\'s fried rice ball — break it open and the mozzarella stretches into a "telephone wire". Order at any pizza-by-the-slice spot.', neighborhood: 'Centro', url: null },
   { day: 11, bucket: 'food',     title: 'Pizza al taglio', body: 'Roman pizza is square, sold by weight, and grab-and-go. Point at what you want and they cut + weigh it. Perfect kid lunch.', neighborhood: 'Anywhere', url: null },
-  { day: 11, bucket: 'shopping', title: 'Via del Corso', body: 'The long pedestrian-ish high street from Piazza del Popolo — mainstream brands the boy will recognise, plus side-street gelato.', neighborhood: 'Centro', url: null },
+  { day: 11, bucket: 'shopping', title: 'Via del Corso', body: 'The long pedestrian-ish high street from Piazza del Popolo — mainstream brands Jace will recognise, plus side-street gelato.', neighborhood: 'Centro', url: null },
   // Bologna
   { day: 12, bucket: 'mythology', title: 'Neptune\'s trident', body: 'Bologna\'s Neptune Fountain shows the sea god calming the waters — the same Poseidon/Neptune you\'ll have met in Athens and Rome.', neighborhood: 'Piazza Maggiore', url: null },
   { day: 13, bucket: 'food',      title: 'Tortellini origin myth', body: 'Legend: an innkeeper spied on Venus through a keyhole and shaped pasta after her navel — that\'s the tortellino. Bologna takes this seriously.', neighborhood: 'Quadrilatero', url: null },
@@ -373,7 +374,7 @@ const DEFAULT_CHECKLISTS = {
     'Light layers for cool evenings / Vesuvius rim',
     'Modest top/scarf for the Vatican (covered shoulders & knees)',
     'Small daypack + foldable tote for shopping hauls',
-    'Kid\'s mythology book / Percy Jackson for the trains',
+    'Jace\'s mythology book / Percy Jackson for the trains',
     'Downloaded offline maps + this app on the home screen',
   ].map(t => ({ text: t, checked: false })) },
   pretrip: { title: '📋 Pre-trip to-do', items: [
@@ -451,7 +452,7 @@ const SHOPS_BY_CITY = {
     { name: 'Via del Corso', cat: 'street', icon: '🛍️', neighborhood: 'Centro', day: 11, url: 'https://maps.google.com/?q=Via+del+Corso+Rome', note: 'Long high street of familiar mid-range brands — easy with a tween.' },
     { name: 'Via dei Condotti', cat: 'dept', icon: '💎', neighborhood: 'Spanish Steps', day: 11, url: 'https://maps.google.com/?q=Via+dei+Condotti+Rome', note: 'The luxury strip at the foot of the Spanish Steps — window-shopping theatre.' },
     { name: 'Campo de\' Fiori market', cat: 'market', icon: '🍅', neighborhood: 'Centro', day: 11, url: 'https://maps.google.com/?q=Campo+de+Fiori+market', note: 'Morning food market — pasta, spices, olive oil; foodie souvenirs to carry home.' },
-    { name: 'Bartolucci (wooden toys)', cat: 'books', icon: '🪵', neighborhood: 'Pantheon', day: 9, url: 'https://maps.google.com/?q=Bartolucci+Rome', note: 'Whimsical hand-made wooden toys & Pinocchios — fun browse for the boy.' },
+    { name: 'Bartolucci (wooden toys)', cat: 'books', icon: '🪵', neighborhood: 'Pantheon', day: 9, url: 'https://maps.google.com/?q=Bartolucci+Rome', note: 'Whimsical hand-made wooden toys & Pinocchios — fun browse for Jace.' },
   ],
   Bologna: [
     { name: 'Quadrilatero market lanes', cat: 'market', icon: '🧀', neighborhood: 'Centro', day: 12, url: 'https://maps.google.com/?q=Quadrilatero+Bologna', note: 'Medieval food-market grid: Parmigiano, mortadella, fresh pasta, balsamic.' },
@@ -510,7 +511,7 @@ const FOODS_BY_CITY = {
 const MICHELIN_BY_CITY = {
   Athens: [
     { id: 'ath-1', stars: 0, name: 'A Little Taste of Home', day: 2, bookWeeks: 1, kidNote: 'Cosy, friendly, great for a relaxed sit-down with a tween.', url: 'https://maps.google.com/?q=A+Little+Taste+of+Home+Athens', note: 'Beloved Plaka spot for a proper Greek meal without fuss.' },
-    { id: 'ath-2', stars: 1, name: 'Spondi (1★, big splurge)', day: 5, bookWeeks: 4, kidNote: 'Grown-up celebration dinner — best if the boy is up for fine dining.', url: 'https://maps.google.com/?q=Spondi+Athens', note: 'Long-running Michelin-starred classic for a special last Athens night.' },
+    { id: 'ath-2', stars: 1, name: 'Spondi (1★, big splurge)', day: 5, bookWeeks: 4, kidNote: 'Grown-up celebration dinner — best if Jace is up for fine dining.', url: 'https://maps.google.com/?q=Spondi+Athens', note: 'Long-running Michelin-starred classic for a special last Athens night.' },
   ],
   Naples: [
     { id: 'nap-1', stars: 0, name: 'Da Michele (pizza temple)', day: 6, bookWeeks: 0, kidNote: 'No reservations, ticket system, electric atmosphere — pure Naples.', url: 'https://maps.google.com/?q=L%27Antica+Pizzeria+da+Michele', note: 'The most famous pizzeria on earth. Two pizzas, a few euros, worth the queue.' },
@@ -588,6 +589,8 @@ const defaultState = () => ({
   guideTab: 'shops',
   tipBucket: 'all',
   phraseLang: 'greek',
+  vatAmount: '',
+  vatCountry: 'italy',
   dark: false,
   fontScale: 'base',
 });
@@ -943,6 +946,89 @@ function guideRoute(phase) {
 }
 
 /* =====================================================================
+   VIEW: SHOPPING — VAT refund calculator + iconic shops (→ Google Maps)
+   ===================================================================== */
+const VAT_INFO = {
+  italy:  { label: 'Italy',  flag: '🇮🇹', rate: 0.22, min: 70 },
+  greece: { label: 'Greece', flag: '🇬🇷', rate: 0.24, min: 50 },
+};
+
+function vatCompute() {
+  const c = VAT_INFO[state.vatCountry] || VAT_INFO.italy;
+  const amt = parseFloat(state.vatAmount) || 0;
+  const vatIncluded = amt * c.rate / (1 + c.rate);   // VAT portion already inside the price
+  const estRefund = vatIncluded * 0.7;               // operators keep ~30% commission
+  const meetsMin = amt >= c.min;
+  return { c, amt, vatIncluded, estRefund, meetsMin };
+}
+
+function vatResultsHTML() {
+  const { c, amt, vatIncluded, estRefund, meetsMin } = vatCompute();
+  return `
+    <div class="grid grid-cols-2 gap-2 mt-3">
+      <div class="rounded-xl bg-stone-50 dark:bg-stone-800/60 p-3">
+        <div class="text-[11px] opacity-60">VAT inside the price</div>
+        <div class="font-display text-2xl">€${vatIncluded.toFixed(2)}</div>
+      </div>
+      <div class="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 p-3 border border-emerald-200 dark:border-emerald-800">
+        <div class="text-[11px] text-emerald-700 dark:text-emerald-400">Est. refund (after fees)</div>
+        <div class="font-display text-2xl text-emerald-700 dark:text-emerald-300">€${estRefund.toFixed(2)}</div>
+      </div>
+    </div>
+    ${amt > 0 && !meetsMin ? `<p class="text-[12px] mt-2 text-amber-600 dark:text-amber-400">⚠️ Below the €${c.min} minimum spend per store in ${c.flag} ${c.label} — spend a little more in one shop to qualify.</p>` : ''}`;
+}
+
+function vatCalcHTML() {
+  const countryBtns = Object.entries(VAT_INFO).map(([k, v]) => `
+    <button data-vatcountry="${k}" class="flex-1 py-2 rounded-xl text-sm font-medium ${state.vatCountry===k ? 'bg-sky-600 text-white' : 'bg-stone-100 dark:bg-stone-800'}">${v.flag} ${v.label} · ${Math.round(v.rate*100)}%</button>`).join('');
+  return `
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-5 fade-in">
+      <h3 class="font-serif text-lg font-semibold mb-1">💶 VAT Refund Calculator</h3>
+      <p class="text-[12px] opacity-60 mb-3">Non-EU visitors can reclaim sales tax (VAT) on goods taken home. Estimate what you'd get back:</p>
+      <div class="flex gap-2 mb-3">${countryBtns}</div>
+      <label class="block text-[12px] font-medium opacity-70 mb-1">Amount spent in ONE store (€)</label>
+      <input id="vatAmount" type="number" inputmode="decimal" min="0" placeholder="e.g. 250" value="${esc(state.vatAmount)}"
+        class="w-full px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500">
+      <div id="vatResults">${vatResultsHTML()}</div>
+      <p class="text-[11px] opacity-50 mt-3 leading-snug">Estimate only. Ask for a <b>Tax Free form</b> + receipt in the shop, keep goods unused, then get the form validated at your final EU airport (Milan) before checking bags. Operators take a commission, so you receive less than the full VAT.</p>
+    </div>`;
+}
+
+function shopsAllCitiesHTML() {
+  return CITIES.map(c => {
+    const items = SHOPS_BY_CITY[c.city] || [];
+    if (!items.length) return '';
+    const rows = items.map(s => `
+      <a href="${esc(s.url)}" target="_blank" rel="noopener" class="flex items-start gap-3 p-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 active:scale-[0.99] transition">
+        <span class="text-2xl shrink-0">${esc(s.icon)}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-serif font-semibold">${esc(s.name)}</span>
+            <span class="text-xs text-sky-600 dark:text-sky-400 shrink-0">📍 map ↗</span>
+          </div>
+          <div class="text-[12px] opacity-60">${esc(s.neighborhood)} · ${SHOP_CAT_LABEL[s.cat]||s.cat}</div>
+          ${s.note ? `<p class="text-[12px] mt-0.5 opacity-80 leading-snug">${esc(s.note)}</p>` : ''}
+        </div>
+      </a>`).join('');
+    return `
+      <div class="mb-5">
+        <h3 class="font-display text-xl mb-2 inline-flex items-center gap-2"><span class="w-3.5 h-3.5 rounded ${cityCardClass(c.phase)}"></span>${esc(c.city.toUpperCase())}</h3>
+        <div class="space-y-2">${rows}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderShopping() {
+  const app = $('#app');
+  app.innerHTML = `
+    <h2 class="font-display text-2xl mb-3">SHOPPING</h2>
+    ${vatCalcHTML()}
+    <h3 class="font-display text-2xl mb-1">ICONIC SHOPS</h3>
+    <p class="text-[12px] opacity-60 mb-4">Tap any shop to open it in Google Maps.</p>
+    ${shopsAllCitiesHTML()}`;
+}
+
+/* =====================================================================
    VIEW: NOTES (checklists, bookings, phrases)
    ===================================================================== */
 function renderNotes() {
@@ -1072,7 +1158,7 @@ function renderSettings() {
       <p class="text-[13px] opacity-70">Add to your home screen for a full-screen, offline app: in Safari tap <b>Share → Add to Home Screen</b>; on Android use the browser menu → <b>Install app</b>.</p>
     </div>
 
-    <p class="text-center text-[11px] opacity-40 mt-6 mb-2">Athens → Naples → Rome → Bologna → Milan · Sep 2026<br>Built for Kevin & son · static, offline-first, no tracking.</p>`;
+    <p class="text-center text-[11px] opacity-40 mt-6 mb-2">Athens → Naples → Rome → Bologna → Milan · Jun 2026<br>Built for Kevin & Jace · static, offline-first, no tracking.</p>`;
 }
 
 /* =====================================================================
@@ -1091,16 +1177,18 @@ function render() {
   if (v === 'today') renderToday();
   else if (v === 'days') renderDays();
   else if (v === 'guide') renderGuide();
+  else if (v === 'shopping') renderShopping();
   else if (v === 'notes') renderNotes();
   else if (v === 'settings') renderSettings();
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
 
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-nav],[data-gcity],[data-gtab],[data-bucket],[data-lang],[data-fs],[data-tipread],#toggleDark,#exportData,#importData,#resetData');
+  const t = e.target.closest('[data-nav],[data-gcity],[data-gtab],[data-bucket],[data-lang],[data-fs],[data-tipread],[data-vatcountry],#toggleDark,#exportData,#importData,#resetData');
   if (!t) return;
 
   if (t.dataset.nav) { state.view = t.dataset.nav; save(); render(); }
+  else if (t.dataset.vatcountry) { state.vatCountry = t.dataset.vatcountry; save(); renderShopping(); }
   else if (t.dataset.gcity) { state.guideCity = t.dataset.gcity; save(); renderGuide(); }
   else if (t.dataset.gtab) { state.guideTab = t.dataset.gtab; save(); renderGuide(); }
   else if (t.dataset.bucket) { state.tipBucket = t.dataset.bucket; save(); renderGuide(); }
@@ -1137,6 +1225,15 @@ document.addEventListener('change', (e) => {
       } catch (err) { alert('Could not read that file.'); }
     };
     reader.readAsText(file);
+  }
+});
+
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'vatAmount') {
+    state.vatAmount = e.target.value;
+    save();
+    const r = $('#vatResults');
+    if (r) r.innerHTML = vatResultsHTML();
   }
 });
 
