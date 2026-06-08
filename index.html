@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0c4a6e" />
+<title>Athens → Milan · Kevin & Son</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Bebas Neue', 'sans-serif'],
+          serif: ['Fraunces', 'serif'],
+          sans: ['Outfit', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root { font-size: 16px; }
+  html.fs-sm { font-size: 15px; } html.fs-lg { font-size: 17.5px; } html.fs-xl { font-size: 19px; }
+  body { font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  .chip-active { box-shadow: 0 0 0 2px currentColor inset; }
+  /* phase color accents (left border of day cards) */
+  .phase-athens   { border-left-color: #0ea5e9; }
+  .phase-naples   { border-left-color: #f43f5e; }
+  .phase-rome     { border-left-color: #f59e0b; }
+  .phase-bologna  { border-left-color: #ef4444; }
+  .phase-milan    { border-left-color: #8b5cf6; }
+  .phase-departure{ border-left-color: #64748b; }
+  .day-card { border-left-width: 5px; }
+  .fade-in { animation: fade .35s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .safe-bottom { padding-bottom: calc(4.75rem + env(safe-area-inset-bottom)); }
+  .nav-safe { padding-bottom: env(safe-area-inset-bottom); }
+</style>
+</head>
+<body class="bg-stone-50 text-stone-800 dark:bg-stone-950 dark:text-stone-100 transition-colors">
+
+<!-- ====================== HEADER ====================== -->
+<header class="sticky top-0 z-30 bg-gradient-to-r from-sky-800 via-rose-700 to-violet-800 text-white shadow-lg">
+  <div class="max-w-2xl mx-auto px-4 pt-3 pb-3" style="padding-top: calc(0.75rem + env(safe-area-inset-top));">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="text-[10px] tracking-[0.25em] uppercase opacity-80 font-medium">Mythology · Food · Shopping</div>
+        <h1 class="font-display text-3xl leading-none tracking-wide">ATHENS → MILAN</h1>
+      </div>
+      <div class="text-right">
+        <div id="hdrCountdown" class="font-serif text-lg font-semibold leading-tight"></div>
+        <div class="text-[11px] opacity-80">Jun 8–23, 2026</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="app" class="max-w-2xl mx-auto px-4 pt-4 safe-bottom"></main>
+
+<!-- ====================== BOTTOM NAV ====================== -->
+<nav class="fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-stone-900/95 backdrop-blur border-t border-stone-200 dark:border-stone-800 nav-safe">
+  <div class="max-w-2xl mx-auto grid grid-cols-5">
+    <button data-nav="today"    class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">📍</span>Today</button>
+    <button data-nav="days"     class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">🗓️</span>Days</button>
+    <button data-nav="guide"    class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">🏛️</span>Guide</button>
+    <button data-nav="notes"    class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">📝</span>Notes</button>
+    <button data-nav="settings" class="nav-btn flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium"><span class="text-xl">⚙️</span>Settings</button>
+  </div>
+</nav>
+
+<script>
+/* =====================================================================
+   TRIP HUB — Athens → Milan (Kevin & son, Sep 2026)
+   Pure static: localStorage only. No Supabase, no Vercel, no API keys.
+   ===================================================================== */
+
+/* ---------- City keys (lowercase phase = colors/groups, Display = guide) ---------- */
+const CITIES = [
+  { phase: 'athens',  city: 'Athens'  },
+  { phase: 'naples',  city: 'Naples'  },
+  { phase: 'rome',    city: 'Rome'    },
+  { phase: 'bologna', city: 'Bologna' },
+  { phase: 'milan',   city: 'Milan'   },
+];
+
+const PHASE_CLASS = {
+  athens: 'phase-athens', naples: 'phase-naples', rome: 'phase-rome',
+  bologna: 'phase-bologna', milan: 'phase-milan', departure: 'phase-departure',
+};
+
+const CITY_CELL = {
+  athens:  'bg-sky-100 text-sky-900 dark:bg-sky-900/50 dark:text-sky-100',
+  naples:  'bg-rose-100 text-rose-900 dark:bg-rose-900/50 dark:text-rose-100',
+  rome:    'bg-amber-100 text-amber-900 dark:bg-amber-900/50 dark:text-amber-100',
+  bologna: 'bg-red-100 text-red-900 dark:bg-red-900/50 dark:text-red-100',
+  milan:   'bg-violet-100 text-violet-900 dark:bg-violet-900/50 dark:text-violet-100',
+};
+
+const BUCKETS = {
+  mythology: { label: 'Mythology', icon: '🏛️' },
+  food:      { label: 'Iconic Food', icon: '🍝' },
+  shopping:  { label: 'Shopping', icon: '🛍️' },
+};
+
+/* ============================ TRIP (one object per day) ============================ */
+const TRIP = [
+  {
+    day: 1, date: '2026-06-08', weekday: 'Mon', phase: 'athens', city: 'Athens', flag: '🛬',
+    title: 'Land in Athens — Plaka warm-up',
+    am: 'Arrive, drop bags, and shake off the flight. Keep day one easy: a slow wander through the Plaka, the old village-like quarter tucked under the Acropolis with neoclassical houses and bougainvillea.',
+    pm: 'First Greek dinner — souvlaki and a fresh Greek salad. Look UP from anywhere in Plaka and you can already see the floodlit Parthenon glowing on the rock. Early night to beat jet lag.',
+    sleep: 'Hotel in Plaka / Syntagma area (night 1/5)',
+    transit: 'Metro Line 3 runs airport → Syntagma/Monastiraki (~40 min, €9 airport ticket). A taxi is a flat ~€40 to the centre by day.',
+    flightPlaceholder: true, flightTime: 'Arrival',
+    destinations: [
+      { name: 'Plaka & Anafiotika', url: 'https://maps.google.com/?q=Anafiotika+Athens', note: 'Anafiotika is a tiny whitewashed island-style neighbourhood hidden in Plaka — feels like a Cycladic village, great first photo walk.' },
+      { name: 'Areopagus Hill (sunset)', url: 'https://maps.google.com/?q=Areopagus+Hill+Athens', note: 'A free rocky outcrop with a knockout view of the Acropolis at golden hour. In myth, this is where the gods put Ares on trial for murder.' },
+    ],
+    soloTip: { bucket: 'food', title: 'First-night souvlaki', body: 'A pork or chicken souvlaki wrap costs €3–4 and is the perfect low-stakes first meal for a tired kid. Add a side of tzatziki for dunking.' },
+  },
+  {
+    day: 2, date: '2026-06-09', weekday: 'Tue', phase: 'athens', city: 'Athens', flag: '🏛️',
+    title: 'The Acropolis & Ancient Agora',
+    am: 'Go EARLY (gates open 08:00) to beat heat and crowds. Climb the sacred rock: the Propylaia gateway, tiny Temple of Athena Nike, the Erechtheion with its Porch of the Maidens (Caryatids), and the mighty Parthenon — the temple of Athena, goddess of wisdom, who once held a 12-metre gold-and-ivory statue inside.',
+    pm: 'Walk down the far slope into the Ancient Agora — the open marketplace where Socrates once argued — crowned by the Temple of Hephaestus, the best-preserved ancient Greek temple anywhere. Finish on the Areopagus rock at golden hour, where myth says the gods themselves held court.',
+    sleep: 'Hotel in Plaka / Syntagma area (night 2/5)',
+    transit: 'All on foot from Plaka. Buy the combo ticket online to skip the line; the same ticket covers the Acropolis, Agora, Hephaestus and Olympian Zeus for 5 days.',
+    destinations: [
+      { name: 'Acropolis (book timed entry)', url: 'https://hhticket.gr/', note: 'For Kevin\'s son: the Erechtheion stands on the exact spot where Athena and Poseidon had their contest to win the city — she gave the olive tree and won.' },
+      { name: 'Ancient Agora & Temple of Hephaestus', url: 'https://maps.google.com/?q=Temple+of+Hephaestus+Athens', note: 'A whole open-air ruined city centre. The Temple of Hephaestus (god of the forge and fire) is so intact you can picture its roof.' },
+    ],
+    soloTip: { bucket: 'mythology', title: 'Find the contest', body: 'On the Acropolis, look for the Erechtheion. Myth says Poseidon struck the rock and made a saltwater spring; Athena planted an olive tree. The gods judged the olive more useful — so the city is "Athens".' },
+  },
+  {
+    day: 3, date: '2026-06-10', weekday: 'Wed', phase: 'athens', city: 'Athens', flag: '🦁',
+    title: 'Day trip: Mycenae & Epidaurus',
+    am: 'Drive into the Peloponnese (~1h30) to Mycenae, the gold-rich citadel of King Agamemnon who led the Greeks to Troy. Pass beneath the famous Lion Gate and duck inside the colossal beehive "Treasury of Atreus" tomb.',
+    pm: 'On to the Theatre of Epidaurus — a 2,300-year-old open-air theatre with acoustics so perfect you can hear a coin drop on the stage from the very top row (have the boy test it). Stop in seaside Nafplio for a late lunch before the drive back.',
+    sleep: 'Hotel in Plaka / Syntagma area (night 3/5)',
+    transit: 'Best as a pre-booked small-group day tour with driver — it loops Mycenae, Epidaurus and Nafplio in one go. Long but legendary day; snacks, water, hats.',
+    destinations: [
+      { name: 'Mycenae & the Lion Gate', url: 'https://maps.google.com/?q=Mycenae+Lion+Gate', note: 'Home of Agamemnon and the gold "Mask of Agamemnon". The Lion Gate is the oldest monumental sculpture in Europe — you walk right under it.' },
+      { name: 'Theatre of Epidaurus', url: 'https://maps.google.com/?q=Ancient+Theatre+of+Epidaurus', note: 'Part of the sanctuary of Asclepius, god of healing. Stand centre-stage and whisper — the whole hillside hears you.' },
+    ],
+    soloTip: { bucket: 'mythology', title: 'Test the acoustics', body: 'At Epidaurus, have one of you stand dead-centre on the stone circle and drop a coin or tear paper — someone on the top row, 60m away, hears it clearly. No microphones, just ancient maths.' },
+  },
+  {
+    day: 4, date: '2026-06-11', weekday: 'Thu', phase: 'athens', city: 'Athens', flag: '🔮',
+    title: 'Day trip: Delphi, home of the Oracle',
+    am: 'Drive (or guided day tour) to Delphi, ~2.5h through mountains. The ancients believed this was the centre of the world — Zeus released two eagles and they met here. Climb past the Temple of Apollo where the Oracle gave her famous riddles.',
+    pm: 'See the Delphi Museum\'s bronze Charioteer and the stadium/theatre up the slope, then the long, scenic drive back to Athens. (Easier alternative: swap for Cape Sounion — see Day 5 note.)',
+    sleep: 'Hotel in Plaka / Syntagma area (night 4/5)',
+    transit: 'Best as a pre-booked small-group day tour with driver/guide; self-drive is a rental + ~5h round trip. Long day — pack snacks and water.',
+    destinations: [
+      { name: 'Archaeological Site of Delphi', url: 'https://maps.google.com/?q=Delphi+Greece', note: 'Kings and generals travelled here for the Oracle\'s prophecies. The riddles were famously double-edged — "a great empire will fall" (yours!).' },
+      { name: 'Delphi Archaeological Museum', url: 'https://maps.google.com/?q=Delphi+Archaeological+Museum', note: 'Home of the Charioteer of Delphi, one of the finest surviving ancient bronzes, with eyes still inlaid in stone and glass.' },
+    ],
+    soloTip: { bucket: 'mythology', title: 'Navel of the world', body: 'Look for the "omphalos" stone at Delphi — Greeks marked it as the exact centre of the earth, the meeting point of Zeus\'s two eagles.' },
+  },
+  {
+    day: 5, date: '2026-06-12', weekday: 'Fri', phase: 'athens', city: 'Athens', flag: '🌅',
+    title: 'Olympian Zeus + Poseidon\'s sunset',
+    am: 'Slow morning. Visit the Temple of Olympian Zeus — the largest temple in ancient Greece, 638 years in the making, with 15 of its giant columns still standing — and Hadrian\'s Arch beside it. Then the marble Panathenaic Stadium, home of the first modern Olympics (1896); you can run on the track.',
+    pm: 'Late afternoon, head to Cape Sounion (~1.5h) for the cliff-top Temple of Poseidon and one of the most famous sunsets in Greece over the Aegean. Find Lord Byron\'s name carved into a column.',
+    sleep: 'Hotel in Plaka / Syntagma area (night 5/5)',
+    transit: 'KTEL Sounio bus from central Athens, or a sunset half-day tour. Aim to arrive ~1h before sunset for the light.',
+    destinations: [
+      { name: 'Temple of Olympian Zeus', url: 'https://maps.google.com/?q=Temple+of+Olympian+Zeus+Athens', note: 'Covered by the Acropolis combo ticket. A 16th column blew down in an 1852 storm and still lies where it fell.' },
+      { name: 'Temple of Poseidon, Cape Sounion', url: 'https://maps.google.com/?q=Temple+of+Poseidon+Sounion', note: 'Poseidon\'s sea-temple on a cliff. Legend says King Aegeus leapt from these rocks — giving the Aegean Sea its name.' },
+    ],
+    soloTip: { bucket: 'shopping', title: 'Last Athens haul', body: 'Before leaving, hit Monastiraki/Pandrossou St for leather sandals (made to order in some shops), Karagiozis shadow puppets, and a komboloi (worry beads) for the boy.' },
+  },
+  {
+    day: 6, date: '2026-06-13', weekday: 'Sat', phase: 'athens', city: 'Athens → Naples', flag: '✈️',
+    title: 'Fly to Naples — first pizza',
+    am: 'Morning flight Athens → Naples (~1h45). You\'ve left Greece for the kingdom of pizza. Drop bags and dive straight into the Centro Storico.',
+    pm: 'Walk Spaccanapoli — the dead-straight ancient street that "splits Naples" — then your first true Neapolitan pizza Margherita, the dish invented in this city. Finish with a sfogliatella pastry and a tiny, intense espresso.',
+    sleep: 'Hotel near Centro Storico / Toledo (night 1/3)',
+    transit: 'Naples airport → centre via Alibus shuttle (~€5, 20 min) or taxi (flat ~€19 to centre). Naples is intense and chaotic — hold bags close, it\'s part of the fun.',
+    flightPlaceholder: true, flightTime: 'AM flight',
+    destinations: [
+      { name: 'Spaccanapoli', url: 'https://maps.google.com/?q=Spaccanapoli+Naples', note: 'A 2,000-year-old straight street slicing through the old town, lined with churches, street food, and workshops. Best people-watching in Italy.' },
+      { name: 'L\'Antica Pizzeria da Michele', url: 'https://maps.google.com/?q=L%27Antica+Pizzeria+da+Michele+Naples', note: 'Legendary, two pizzas only (Margherita / Marinara), €5-ish, expect a queue and a ticket number. Sorbillo nearby is the other classic.' },
+    ],
+    soloTip: { bucket: 'food', title: 'Pizza, the Naples way', body: 'Real Neapolitan pizza is soft, blistered, and a little wet in the middle — locals fold it ("a portafoglio", like a wallet) and eat it on the move. Totally normal that it\'s not crispy.' },
+  },
+  {
+    day: 7, date: '2026-06-14', weekday: 'Sun', phase: 'naples', city: 'Naples', flag: '🌋',
+    title: 'Pompeii & Vesuvius',
+    am: 'Day trip to Pompeii, the Roman city frozen by Vesuvius in 79 AD. Walk real streets with chariot ruts, see frescoes, the forum with Vesuvius looming behind, and the haunting plaster casts of victims. A guide brings it alive for kids.',
+    pm: 'Optional: continue up Mount Vesuvius for the crater rim walk and a god\'s-eye view over the bay — or swap for Herculaneum, smaller and even better preserved (wooden doors, upper floors, carbonised food).',
+    sleep: 'Hotel near Centro Storico / Toledo (night 2/3)',
+    transit: 'Circumvesuviana train from Napoli Garibaldi to Pompei Scavi (~35 min, cheap, basic). Go early; Pompeii has almost no shade. Hat, water, sturdy shoes.',
+    destinations: [
+      { name: 'Pompeii Archaeological Park', url: 'https://pompeiisites.org/en/', note: 'Don\'t miss the Forum (with Vesuvius behind), the House of the Faun, the amphitheatre, and the body casts. A 79 AD time capsule.' },
+      { name: 'Mount Vesuvius crater', url: 'https://maps.google.com/?q=Mount+Vesuvius+crater', note: 'The volcano that buried Pompeii — still active. A shuttle + 30-min walk reaches the rim. Cooler up top; bring a layer.' },
+    ],
+    soloTip: { bucket: 'mythology', title: 'A city stopped in time', body: 'Pompeii froze mid-life: loaves of bread in ovens, graffiti on walls, a dog chained at a door. The "casts" are plaster poured into the hollows victims left in the ash.' },
+  },
+  {
+    day: 8, date: '2026-06-15', weekday: 'Mon', phase: 'naples', city: 'Naples', flag: '🏛️',
+    title: 'Greek temples of Paestum',
+    am: 'Day trip south to Paestum (~1h15) — three giant Greek temples standing almost whole in an open field, older and better preserved than most in Greece itself. Walk right up among the columns of the Temple of Neptune (Poseidon) and the Temple of Hera, with far fewer crowds than the big names.',
+    pm: 'Back in Naples, wander Via San Gregorio Armeno — the year-round "Christmas alley" of nativity-figurine workshops — and snack on a cuoppo (fried street-food cone) and a fried pizza in the Centro Storico.',
+    sleep: 'Hotel near Centro Storico / Toledo (night 3/3)',
+    transit: 'Direct regional train Napoli → Paestum (~1h15); temples are a short walk from the station. (Closer mythology alt: Cumae, cave of the prophetic Sibyl.)',
+    destinations: [
+      { name: 'Temples of Paestum', url: 'https://maps.google.com/?q=Paestum+temples', note: 'A Greek colony in Italy. The Temple of Neptune is one of the most complete Doric temples on earth — you can walk straight in among the columns.' },
+      { name: 'Via San Gregorio Armeno', url: 'https://maps.google.com/?q=Via+San+Gregorio+Armeno+Naples', note: 'Tiny lane crammed with nativity (presepe) artisans. Let the boy pick a hand-painted figurine — they\'ll even carve modern characters.' },
+    ],
+    soloTip: { bucket: 'mythology', title: 'Greece, in Italy', body: 'Paestum was founded by Greek settlers around 600 BC and named for Poseidon ("Poseidonia"). Its temples are older than the Parthenon and far emptier — a mythology site without the queues.' },
+  },
+  {
+    day: 9, date: '2026-06-16', weekday: 'Tue', phase: 'naples', city: 'Naples → Rome', flag: '🚄',
+    title: 'Train to Rome — fountains & Pantheon',
+    am: 'Fast train Naples → Rome (~1h10). Drop bags and head straight to the centre on foot: the Pantheon, a near-perfect 2,000-year-old temple "to all the gods" with an open hole (oculus) in its dome.',
+    pm: 'Toss a coin in the Trevi Fountain (right hand over left shoulder = you\'ll return to Rome) — it\'s a giant tableau of Oceanus/Neptune. Climb the Spanish Steps, eat the first of many gelati, and try cacio e pepe for dinner.',
+    sleep: 'Hotel near Pantheon / Trevi (night 1/3)',
+    transit: 'Frecciarossa/Italo from Napoli Centrale to Roma Termini (book ahead for cheap fares). Centre is walkable; grab a 24/48h transit pass for buses/metro.',
+    trainBooked: { time: 'Naples → Rome, ~1h10 high-speed' },
+    destinations: [
+      { name: 'Pantheon', url: 'https://maps.google.com/?q=Pantheon+Rome', note: 'A temple to every Roman god, with the largest unreinforced concrete dome on earth. The oculus is open to the sky — rain falls straight in and drains away.' },
+      { name: 'Trevi Fountain', url: 'https://maps.google.com/?q=Trevi+Fountain+Rome', note: 'Neptune/Oceanus rides a shell chariot pulled by sea-horses. Best at night, less mobbed early morning.' },
+    ],
+    soloTip: { bucket: 'food', title: 'Roman pasta starter pack', body: 'Three to try in Rome: cacio e pepe (cheese + pepper), carbonara (egg + guanciale), and supplì (fried rice balls with a mozzarella surprise inside).' },
+  },
+  {
+    day: 10, date: '2026-06-17', weekday: 'Wed', phase: 'rome', city: 'Rome', flag: '🏟️',
+    title: 'Gladiators: Colosseum & Forum',
+    am: 'The Colosseum at opening — picture 50,000 Romans roaring at gladiators and wild-animal hunts. An arena-floor or underground ticket lets you stand where the fighters waited.',
+    pm: 'Next door: the Roman Forum and Palatine Hill, the ruined heart of the empire — temples, the Senate, and the hill where Romulus supposedly founded Rome. Afterwards walk over to the Bocca della Verità (Mouth of Truth) and dare the boy to put his hand in the ancient stone face that "bites liars".',
+    sleep: 'Hotel near Pantheon / Trevi (night 2/3)',
+    transit: 'Metro Line B to Colosseo. Buy the Colosseum + Forum + Palatine combo online with a timed slot — lines are brutal otherwise.',
+    destinations: [
+      { name: 'Colosseum (timed ticket)', url: 'https://colosseo.it/en/', note: 'Make it a story: gladiators, mock sea-battles, and the underground "hypogeum" of cages and lifts that raised animals into the arena.' },
+      { name: 'Roman Forum & Palatine Hill', url: 'https://maps.google.com/?q=Roman+Forum', note: 'The downtown of ancient Rome. Palatine Hill = the legendary spot where Romulus founded the city after the twins\' fight.' },
+      { name: 'Bocca della Verità', url: 'https://maps.google.com/?q=Bocca+della+Verita+Rome', note: 'An ancient marble face in a church porch. Legend says it bites the hand of anyone who lies — a quick, free, fun photo stop.' },
+    ],
+    soloTip: { bucket: 'mythology', title: 'Romulus & Remus', body: 'Twin baby brothers raised by a she-wolf. They fought over where to build a city; Romulus won, named Rome after himself, and became its first king.' },
+  },
+  {
+    day: 11, date: '2026-06-18', weekday: 'Thu', phase: 'rome', city: 'Rome', flag: '🏺',
+    title: 'Ostia Antica & the Appian Way',
+    am: 'Skip the Vatican queues and ride the train to Ostia Antica — Rome\'s ancient port, a green "mini-Pompeii" with almost no crowds. Climb the marble theatre, walk shop-lined Roman streets, and hunt out the mosaics and the old public toilets (always a kid favourite).',
+    pm: 'Afternoon on the Appian Way (Via Appia Antica), the 2,000-year-old Roman road with long pedestrianised stretches — lined with tombs and ruins under umbrella pines. Walk or rent bikes for a stretch. Evening: pizza al taglio (by the slice) and gelato.',
+    sleep: 'Hotel near Pantheon / Trevi (night 3/3)',
+    transit: 'Ostia: Roma Porta San Paolo → Ostia Antica train (~30 min, covered by a metro ticket). Appian Way: bus 118 or taxi — quietest in the early morning.',
+    destinations: [
+      { name: 'Ostia Antica', url: 'https://maps.google.com/?q=Ostia+Antica', note: 'Rome\'s ruined port — like Pompeii but greener and nearly empty. Climb the real theatre and roam genuine Roman streets and houses.' },
+      { name: 'Appian Way (Via Appia Antica)', url: 'https://maps.google.com/?q=Via+Appia+Antica', note: 'The "queen of roads" the legions marched on. Original basalt paving, ancient tombs and pines — peaceful and atmospheric.' },
+    ],
+    soloTip: { bucket: 'mythology', title: 'Walk a real Roman road', body: 'On the Appian Way you tread the exact stones Roman armies and chariots used 2,000+ years ago — the grooves worn by cartwheels are still there.' },
+  },
+  {
+    day: 12, date: '2026-06-19', weekday: 'Fri', phase: 'rome', city: 'Rome → Bologna', flag: '🚄',
+    title: 'Train to Bologna — towers & Neptune',
+    am: 'High-speed train Rome → Bologna (~2h10). You\'ve arrived in Italy\'s food capital, "Bologna la Grassa" (the Fat). Drop bags and head to Piazza Maggiore.',
+    pm: 'Meet Neptune again — the muscular Fontana del Nettuno (Neptune Fountain) anchors the square. Climb the leaning Asinelli Tower (498 steps) for rooftop views, then graze the Quadrilatero, the medieval market lanes packed with pasta, cheese, and cured-meat shops.',
+    sleep: 'Hotel near Piazza Maggiore (night 1/2)',
+    transit: 'Frecciarossa/Italo from Roma Termini to Bologna Centrale. The historic centre is a flat 10-min walk or quick bus from the station.',
+    trainBooked: { time: 'Rome → Bologna, ~2h10 high-speed' },
+    destinations: [
+      { name: 'Piazza Maggiore & Neptune Fountain', url: 'https://maps.google.com/?q=Fontana+del+Nettuno+Bologna', note: 'Giambologna\'s bronze Neptune commands the sea with his trident — a Renaissance take on the same god you met in Rome and at Sounion.' },
+      { name: 'Asinelli Tower', url: 'https://maps.google.com/?q=Torre+degli+Asinelli+Bologna', note: 'Bologna\'s tallest leaning tower, 498 steps to the top (book ahead). Great "we climbed it" bragging rights for the boy.' },
+    ],
+    soloTip: { bucket: 'food', title: 'It\'s ragù, not "bolognese"', body: 'The local sauce goes on flat tagliatelle, never spaghetti. Order "tagliatelle al ragù" and you\'ll get the real thing — slow-cooked meat sauce perfected over centuries.' },
+  },
+  {
+    day: 13, date: '2026-06-20', weekday: 'Sat', phase: 'bologna', city: 'Bologna', flag: '🍝',
+    title: 'Make pasta + gelato science',
+    am: 'A hands-on pasta cooking class — roll and fold fresh tortellini and tagliatelle with a local "sfoglina". Easily the highest-rated family activity in Bologna, and you eat what you make.',
+    pm: 'Visit the Carpigiani Gelato Museum just outside town (how gelato is made, plus tastings/workshops), or stroll the world\'s-longest portico up to the San Luca sanctuary for hilltop views. Dinner: tortellini in brodo + mortadella.',
+    sleep: 'Hotel near Piazza Maggiore (night 2/2)',
+    transit: 'Most of the centre is under 40 km of porticoes (covered walkways) — shade and rain cover. The Gelato Museum needs a short taxi/bus; San Luca has the little "San Luca Express" train.',
+    destinations: [
+      { name: 'Pasta-making class (book ahead)', url: 'https://maps.google.com/?q=pasta+cooking+class+Bologna', note: 'Look for a small-group class with a sfoglina; ~3h, kid-friendly. You\'ll learn why tortellini are folded the way they are.' },
+      { name: 'Carpigiani Gelato Museum', url: 'https://www.gelatomuseum.com/en/', note: 'The science and history of gelato with tastings — and optional make-your-own workshops. Pure kid catnip.' },
+    ],
+    soloTip: { bucket: 'food', title: 'Bologna\'s big three', body: 'Tagliatelle al ragù, tortellini in brodo (in broth), and a slice of pink mortadella. Add a wedge of Parmigiano straight from a market stall in the Quadrilatero.' },
+  },
+  {
+    day: 14, date: '2026-06-21', weekday: 'Sun', phase: 'bologna', city: 'Bologna → Milan', flag: '🚄',
+    title: 'Train to Milan — Duomo rooftop',
+    am: 'High-speed train Bologna → Milan (~1h05). Italy\'s style capital. Head to Piazza del Duomo and the colossal marble cathedral bristling with spires.',
+    pm: 'Take the lift/stairs up to the Duomo rooftop terraces and walk among the statues with the Alps on the horizon. Next door, the glass-domed Galleria Vittorio Emanuele II — spin three times on the bull mosaic for good luck. Aperitivo + panzerotti for dinner.',
+    sleep: 'Hotel near Duomo / Brera (night 1/2)',
+    transit: 'Frecciarossa/Italo from Bologna Centrale to Milano Centrale, then metro (M3 yellow) to Duomo. Book Duomo + rooftop tickets online in advance.',
+    trainBooked: { time: 'Bologna → Milan, ~1h05 high-speed' },
+    destinations: [
+      { name: 'Duomo di Milano + Rooftop', url: 'https://www.duomomilano.it/en/', note: 'Climb among the marble spires and gargoyles; on a clear day you can see the Alps. The gold Madonnina crowns the highest spire.' },
+      { name: 'Galleria Vittorio Emanuele II', url: 'https://maps.google.com/?q=Galleria+Vittorio+Emanuele+II+Milan', note: 'The world\'s oldest shopping arcade (1877). Tradition: put your heel on the bull mosaic and spin three times for luck.' },
+    ],
+    soloTip: { bucket: 'shopping', title: 'Milan = the fashion city', body: 'Window-shop the "Quadrilatero della Moda" (Via Montenapoleone & around), or take the boy to La Rinascente department store by the Duomo — the rooftop food hall has a face-to-face Duomo view.' },
+  },
+  {
+    day: 15, date: '2026-06-22', weekday: 'Mon', phase: 'milan', city: 'Milan', flag: '🛍️',
+    title: 'Sforza Castle, columns & shopping',
+    am: 'A full, relaxed Milan day. Roam Sforza Castle and its leafy Sempione Park — free, open courtyards and space for the boy to run. Then the Columns of San Lorenzo: 16 ancient Roman columns in a lively square, Milan\'s last surviving slice of the ancient world.',
+    pm: 'Afternoon for shopping and aperitivo: window-shop the Quadrilatero della Moda or hit La Rinascente by the Duomo, then a stroll along the Navigli canals for dinner and gelato.',
+    sleep: 'Hotel near Duomo / Brera (night 2/2)',
+    transit: 'All central and metro-linked (Cairoli for the castle, Porta Genova for Navigli). A great car-free walking day.',
+    destinations: [
+      { name: 'Sforza Castle & Sempione Park', url: 'https://maps.google.com/?q=Castello+Sforzesco+Milan', note: 'A huge brick castle with free, open courtyards opening onto a big park — easy and relaxed for a family afternoon.' },
+      { name: 'Columns of San Lorenzo', url: 'https://maps.google.com/?q=Colonne+di+San+Lorenzo+Milano', note: '16 ancient Roman columns (~3rd century) in a buzzing square — Milan\'s little echo of the ancient world.' },
+    ],
+    soloTip: { bucket: 'shopping', title: 'Milan = the fashion city', body: 'Window-shop the "Quadrilatero della Moda" (Via Montenapoleone), or take the boy to La Rinascente by the Duomo — its rooftop food hall has a face-to-face cathedral view.' },
+  },
+  {
+    day: 16, date: '2026-06-23', weekday: 'Tue', phase: 'milan', city: 'Milan', flag: '🛫',
+    title: 'Last gelato & fly home',
+    am: 'One easy final morning — a last espresso and a wander, then grab a boxed panettone to carry home before heading to the airport. Arrivederci, Italia!',
+    pm: 'Fly home with a phone full of temples, gladiators, pizza and gelato. 🇬🇷🇮🇹',
+    sleep: '— (departure day)',
+    transit: 'Malpensa Express train Cadorna/Centrale → MXP (~50 min), or Linate is closer (~15 min by bus/taxi). Leave plenty of buffer.',
+    flightPlaceholder: true, flightTime: 'Departure',
+    departure: true,
+    destinations: [
+      { name: 'Panettone for home', url: 'https://maps.google.com/?q=panettone+bakery+Milan', note: 'Milan\'s invention — a boxed panettone travels well and is the perfect "we were here" treat for home.' },
+    ],
+    soloTip: { bucket: 'food', title: 'One for the plane', body: 'Buy a boxed panettone or some torrone at a city bakery or the airport — easy to carry and a sweet last taste of Italy.' },
+  },
+];
+
+/* ============================ SEED_TIPS (static; mythology/food/shopping) ============================ */
+const SEED_TIPS = [
+  // Athens
+  { day: 2, bucket: 'mythology', title: 'Spot the Caryatids', body: 'Six carved maidens hold up the Erechtheion porch instead of plain columns. Five you see are weatherproof copies — the worn originals are kept safe under cover.', neighborhood: 'Acropolis', url: 'https://maps.google.com/?q=Erechtheion+Athens' },
+  { day: 2, bucket: 'mythology', title: 'Owls = Athena', body: 'Athena\'s sacred animal was the owl, symbol of wisdom. You\'ll spot owls carved on ancient ruins and on every souvenir in town.', neighborhood: 'Acropolis', url: null },
+  { day: 1, bucket: 'food',      title: 'Loukoumades', body: 'Greek honey doughnuts — warm fried dough balls drizzled with honey and cinnamon (or chocolate). The ultimate kid dessert.', neighborhood: 'Plaka', url: null },
+  { day: 2, bucket: 'food',      title: 'Freddo culture', body: 'Greeks live on iced coffee — a freddo espresso/cappuccino. Order the boy a freddo "decaf" or a frozen Greek yogurt with honey.', neighborhood: 'Anywhere', url: null },
+  { day: 5, bucket: 'shopping',  title: 'Leather sandals', body: 'Several Plaka workshops make Greek-style leather sandals to fit on the spot — a comfy, classic, wearable souvenir.', neighborhood: 'Plaka / Pandrossou St', url: null },
+  { day: 3, bucket: 'shopping',  title: 'Monastiraki flea', body: 'Sunday morning is the big flea market — antiques, coins, worry beads, vintage. Great for a small treasure-hunt budget.', neighborhood: 'Monastiraki', url: null },
+  // Naples
+  { day: 7, bucket: 'mythology', title: 'Gateway to the Underworld', body: 'Near Naples, Lake Avernus and the Sibyl\'s Cave at Cumae were believed to be an entrance to the underworld — where Aeneas descended in the Aeneid.', neighborhood: 'Phlegraean Fields', url: 'https://maps.google.com/?q=Cumae+Sibyl+cave' },
+  { day: 8, bucket: 'mythology', title: 'Older than the Parthenon', body: 'Paestum\'s Temple of Hera was built around 550 BC — a century before the Parthenon. Walk right up and run your hand along columns 2,500+ years old.', neighborhood: 'Paestum', url: 'https://maps.google.com/?q=Paestum+temples' },
+  { day: 6, bucket: 'food',      title: 'Pizza fritta', body: 'Naples\' fried pizza — dough stuffed with ricotta/tomato, then deep-fried. Cheap, messy, and a local obsession.', neighborhood: 'Centro Storico', url: null },
+  { day: 8, bucket: 'food',      title: 'Sfogliatella vs babà', body: 'Two Naples pastries to settle the debate: sfogliatella (crunchy shell, citrus ricotta) vs babà (rum-soaked sponge). Try both.', neighborhood: 'Centro Storico', url: null },
+  { day: 8, bucket: 'shopping',  title: 'Make-your-own presepe', body: 'On San Gregorio Armeno, some workshops will paint a nativity figure to order — even as a mini caricature of the boy.', neighborhood: 'San Gregorio Armeno', url: null },
+  // Rome
+  { day: 9, bucket: 'mythology', title: 'Coin in the Trevi', body: 'Throw with your right hand over your left shoulder: one coin = you\'ll return to Rome. The fountain pulls in ~€1.5M a year, donated to charity.', neighborhood: 'Trevi', url: null },
+  { day: 10, bucket: 'mythology', title: 'Mouth of Truth', body: 'At Santa Maria in Cosmedin, put your hand in the Bocca della Verità — legend says it bites off the hands of liars. A fun, quick photo stop.', neighborhood: 'Bocca della Verità', url: 'https://maps.google.com/?q=Bocca+della+Verita+Rome' },
+  { day: 9, bucket: 'food',      title: 'Supplì', body: 'Rome\'s fried rice ball — break it open and the mozzarella stretches into a "telephone wire". Order at any pizza-by-the-slice spot.', neighborhood: 'Centro', url: null },
+  { day: 11, bucket: 'food',     title: 'Pizza al taglio', body: 'Roman pizza is square, sold by weight, and grab-and-go. Point at what you want and they cut + weigh it. Perfect kid lunch.', neighborhood: 'Anywhere', url: null },
+  { day: 11, bucket: 'shopping', title: 'Via del Corso', body: 'The long pedestrian-ish high street from Piazza del Popolo — mainstream brands the boy will recognise, plus side-street gelato.', neighborhood: 'Centro', url: null },
+  // Bologna
+  { day: 12, bucket: 'mythology', title: 'Neptune\'s trident', body: 'Bologna\'s Neptune Fountain shows the sea god calming the waters — the same Poseidon/Neptune you\'ll have met in Athens and Rome.', neighborhood: 'Piazza Maggiore', url: null },
+  { day: 13, bucket: 'food',      title: 'Tortellini origin myth', body: 'Legend: an innkeeper spied on Venus through a keyhole and shaped pasta after her navel — that\'s the tortellino. Bologna takes this seriously.', neighborhood: 'Quadrilatero', url: null },
+  { day: 12, bucket: 'food',      title: 'Quadrilatero grazing', body: 'The old market lanes are a wall-to-wall deli: mortadella, Parmigiano, fresh pasta. Build a picnic by pointing and pinching off tastes.', neighborhood: 'Quadrilatero', url: null },
+  { day: 13, bucket: 'shopping',  title: 'Edible souvenirs', body: 'Vacuum-packed Parmigiano, a bottle of real balsamic from nearby Modena, and dry pasta travel home easily and beat fridge magnets.', neighborhood: 'Quadrilatero', url: null },
+  // Milan
+  { day: 14, bucket: 'food',      title: 'Saffron risotto', body: 'Risotto alla milanese is bright yellow from saffron — the story goes a glassmaker tinted a wedding risotto gold as a joke and it stuck.', neighborhood: 'Centro', url: null },
+  { day: 14, bucket: 'food',      title: 'Luini panzerotti', body: 'A Milan institution near the Duomo: deep-fried dough pockets of tomato and mozzarella, eaten standing up. Cheap and beloved.', neighborhood: 'Near Duomo', url: 'https://maps.google.com/?q=Luini+Milano' },
+  { day: 14, bucket: 'shopping',  title: 'Spin the bull', body: 'In the Galleria, find the bull in the floor mosaic and spin on its (worn-away) spot three times for good luck — a free, fun ritual.', neighborhood: 'Galleria', url: null },
+  { day: 15, bucket: 'shopping',  title: 'La Rinascente', body: 'The flagship department store by the Duomo: everything under one roof, tax-free desk for tourists, and a rooftop food hall facing the cathedral.', neighborhood: 'Duomo', url: null },
+];
+
+/* ============================ DEFAULT_CHECKLISTS ============================ */
+const DEFAULT_CHECKLISTS = {
+  packing: { title: '🧳 Packing list', items: [
+    'Passports (both) + photos of passports on phone',
+    'EU plug adapters (Type C/F) + power bank',
+    'Comfortable walking shoes (lots of ruins!)',
+    'Sun hats + sunscreen (Pompeii & Acropolis have no shade)',
+    'Refillable water bottles (free fountains everywhere)',
+    'Light layers for cool evenings / Vesuvius rim',
+    'Modest top/scarf for the Vatican (covered shoulders & knees)',
+    'Small daypack + foldable tote for shopping hauls',
+    'Kid\'s mythology book / Percy Jackson for the trains',
+    'Downloaded offline maps + this app on the home screen',
+  ].map(t => ({ text: t, checked: false })) },
+  pretrip: { title: '📋 Pre-trip to-do', items: [
+    'Book Acropolis timed entry (hhticket.gr)',
+    'Book Colosseum + Forum combo (timed slot)',
+    'Book Mycenae & Epidaurus day tour from Athens',
+    'Book Delphi day tour from Athens',
+    'Reserve all 4 high-speed trains (Naples→Rome→Bologna→Milan)',
+    'Plan Paestum temples trip (regional train tickets)',
+    'Book Bologna pasta-making class',
+    'Buy Athens airport metro tickets / arrange transfer',
+    'Notify bank of travel + get some euro cash',
+    'Check Athens & Naples flight + Milan departure times',
+  ].map(t => ({ text: t, checked: false })) },
+};
+
+/* ============================ BOOKINGS_CATALOG (time-critical) ============================ */
+const BOOKINGS_CATALOG = [
+  { id: 'acropolis',  title: 'Acropolis timed entry',               forDay: 2,  leadDays: 21, url: 'https://hhticket.gr/', icon: '🏛️' },
+  { id: 'argolis',    title: 'Mycenae & Epidaurus day tour',        forDay: 3,  leadDays: 14, url: 'https://maps.google.com/?q=Mycenae+Epidaurus+day+tour+Athens', icon: '🦁' },
+  { id: 'delphi',     title: 'Delphi day tour',                     forDay: 4,  leadDays: 14, url: 'https://maps.google.com/?q=Delphi+day+tour+Athens', icon: '🔮' },
+  { id: 'pompeii',    title: 'Pompeii guide / skip-the-line',       forDay: 7,  leadDays: 10, url: 'https://pompeiisites.org/en/', icon: '🌋' },
+  { id: 'paestum',    title: 'Paestum temples trip',                forDay: 8,  leadDays: 7,  url: 'https://maps.google.com/?q=Paestum+temples', icon: '🏛️' },
+  { id: 'trains',     title: 'High-speed trains ×4 (book cheap fares)', forDay: 9, leadDays: 30, url: 'https://www.trenitalia.com/en.html', icon: '🚄' },
+  { id: 'colosseum',  title: 'Colosseum + Forum combo',             forDay: 10, leadDays: 21, url: 'https://colosseo.it/en/', icon: '🏟️' },
+  { id: 'pasta',      title: 'Bologna pasta-making class',          forDay: 13, leadDays: 14, url: 'https://maps.google.com/?q=pasta+class+Bologna', icon: '🍝' },
+];
+
+/* ============================ PHRASES (Greek + Italian) ============================ */
+const GREEK_PHRASES = [
+  { loc: 'Γειά σας', en: 'Hello (polite)', pron: 'YAH-sas' },
+  { loc: 'Γειά σου', en: 'Hi (casual)', pron: 'YAH-soo' },
+  { loc: 'Ευχαριστώ', en: 'Thank you', pron: 'ef-kha-ri-STOH' },
+  { loc: 'Παρακαλώ', en: 'Please / you\'re welcome', pron: 'pa-ra-ka-LOH' },
+  { loc: 'Ναι / Όχι', en: 'Yes / No', pron: 'neh / OH-hee' },
+  { loc: 'Συγγνώμη', en: 'Excuse me / sorry', pron: 'see-GHNO-mee' },
+  { loc: 'Πόσο κάνει;', en: 'How much is it?', pron: 'PO-so KA-nee' },
+  { loc: 'Ένα σουβλάκι, παρακαλώ', en: 'One souvlaki, please', pron: 'EH-na soo-VLA-kee pa-ra-ka-LOH' },
+  { loc: 'Νερό', en: 'Water', pron: 'neh-ROH' },
+  { loc: 'Πού είναι...;', en: 'Where is...?', pron: 'poo EE-neh' },
+];
+const ITALIAN_PHRASES = [
+  { loc: 'Buongiorno', en: 'Good morning / hello', pron: 'bwon-JOR-no' },
+  { loc: 'Buonasera', en: 'Good evening', pron: 'bwo-na-SEH-ra' },
+  { loc: 'Grazie', en: 'Thank you', pron: 'GRAH-tsyeh' },
+  { loc: 'Prego', en: 'You\'re welcome / go ahead', pron: 'PREH-go' },
+  { loc: 'Per favore', en: 'Please', pron: 'pehr fa-VOH-reh' },
+  { loc: 'Sì / No', en: 'Yes / No', pron: 'see / no' },
+  { loc: 'Scusi', en: 'Excuse me', pron: 'SKOO-zee' },
+  { loc: 'Quanto costa?', en: 'How much is it?', pron: 'KWAN-to KOS-ta' },
+  { loc: 'Una pizza margherita, per favore', en: 'One Margherita pizza, please', pron: 'OO-na PEET-tsa mar-geh-REE-ta' },
+  { loc: 'Un gelato, per favore', en: 'An ice cream, please', pron: 'oon jeh-LAH-to' },
+  { loc: 'Il conto, per favore', en: 'The bill, please', pron: 'eel KON-to' },
+  { loc: 'Dov\'è il bagno?', en: 'Where is the toilet?', pron: 'do-VEH eel BAH-nyo' },
+];
+
+/* ============================ SHOPS_BY_CITY ============================ */
+const SHOP_CAT_ORDER = ['market','street','books','design','concept','vintage','dept','outdoor','watch'];
+const SHOP_CAT_LABEL = { dept:'Dept store', watch:'Watches', design:'Design', street:'Street/Local', outdoor:'Outdoor', books:'Books/Toys', concept:'Concept', vintage:'Vintage', market:'Market' };
+const SHOPS_BY_CITY = {
+  Athens: [
+    { name: 'Monastiraki Flea Market', cat: 'market', icon: '🛒', neighborhood: 'Monastiraki', day: 3, url: 'https://maps.google.com/?q=Monastiraki+Flea+Market', note: 'Sprawling flea — antiques, coins, worry beads, vintage. Liveliest Sunday morning.' },
+    { name: 'Pandrossou Street', cat: 'street', icon: '🏺', neighborhood: 'Plaka', day: 5, url: 'https://maps.google.com/?q=Pandrossou+Street+Athens', note: 'Souvenir lane: olive-wood carvings, statuettes, magnets, traditional crafts.' },
+    { name: 'Melissinos Art (sandals)', cat: 'street', icon: '👡', neighborhood: 'Psyri/Plaka', day: 5, url: 'https://maps.google.com/?q=Melissinos+Art+sandals+Athens', note: 'Famous "poet sandal-maker" — leather sandals fitted on the spot.' },
+    { name: 'Forget Me Not', cat: 'design', icon: '🎨', neighborhood: 'Plaka', day: 5, url: 'https://maps.google.com/?q=Forget+Me+Not+Athens', note: 'Modern Greek design gifts — a step up from the magnet stalls.' },
+    { name: 'Karagiozis puppet shops', cat: 'books', icon: '🎭', neighborhood: 'Plaka', day: 5, url: 'https://maps.google.com/?q=Karagiozis+shadow+puppet+Athens', note: 'Traditional shadow-theatre puppets — a great kid keepsake.' },
+  ],
+  Naples: [
+    { name: 'Via San Gregorio Armeno', cat: 'street', icon: '👼', neighborhood: 'Centro Storico', day: 8, url: 'https://maps.google.com/?q=Via+San+Gregorio+Armeno', note: 'Nativity-figurine workshops, year-round. Pick a hand-painted "pastore".' },
+    { name: 'Spaccanapoli stalls', cat: 'street', icon: '🛍️', neighborhood: 'Centro Storico', day: 6, url: 'https://maps.google.com/?q=Spaccanapoli+Naples', note: 'Horn charms ("cornicello"), football scarves, coral & cameo jewellery.' },
+    { name: 'Galleria Umberto I', cat: 'dept', icon: '🏛️', neighborhood: 'Toledo', day: 8, url: 'https://maps.google.com/?q=Galleria+Umberto+I+Naples', note: 'Grand 19th-c. glass arcade near the opera house — Naples\' answer to Milan\'s Galleria.' },
+    { name: 'Via Toledo', cat: 'street', icon: '🚶', neighborhood: 'Toledo', day: 8, url: 'https://maps.google.com/?q=Via+Toledo+Naples', note: 'Long pedestrian shopping street; pass through the photogenic Toledo metro station.' },
+  ],
+  Rome: [
+    { name: 'Via del Corso', cat: 'street', icon: '🛍️', neighborhood: 'Centro', day: 11, url: 'https://maps.google.com/?q=Via+del+Corso+Rome', note: 'Long high street of familiar mid-range brands — easy with a tween.' },
+    { name: 'Via dei Condotti', cat: 'dept', icon: '💎', neighborhood: 'Spanish Steps', day: 11, url: 'https://maps.google.com/?q=Via+dei+Condotti+Rome', note: 'The luxury strip at the foot of the Spanish Steps — window-shopping theatre.' },
+    { name: 'Campo de\' Fiori market', cat: 'market', icon: '🍅', neighborhood: 'Centro', day: 11, url: 'https://maps.google.com/?q=Campo+de+Fiori+market', note: 'Morning food market — pasta, spices, olive oil; foodie souvenirs to carry home.' },
+    { name: 'Bartolucci (wooden toys)', cat: 'books', icon: '🪵', neighborhood: 'Pantheon', day: 9, url: 'https://maps.google.com/?q=Bartolucci+Rome', note: 'Whimsical hand-made wooden toys & Pinocchios — fun browse for the boy.' },
+  ],
+  Bologna: [
+    { name: 'Quadrilatero market lanes', cat: 'market', icon: '🧀', neighborhood: 'Centro', day: 12, url: 'https://maps.google.com/?q=Quadrilatero+Bologna', note: 'Medieval food-market grid: Parmigiano, mortadella, fresh pasta, balsamic.' },
+    { name: 'Tamburini', cat: 'market', icon: '🐖', neighborhood: 'Quadrilatero', day: 12, url: 'https://maps.google.com/?q=Tamburini+Bologna', note: 'Legendary deli — vacuum-packed cured meats & cheese to take home.' },
+    { name: 'Via dell\'Indipendenza', cat: 'street', icon: '🛍️', neighborhood: 'Centro', day: 13, url: 'https://maps.google.com/?q=Via+dell%27Indipendenza+Bologna', note: 'Main shopping boulevard under the porticoes — mainstream stores.' },
+    { name: 'Eataly Bologna', cat: 'concept', icon: '🫒', neighborhood: 'Centro', day: 13, url: 'https://maps.google.com/?q=Eataly+Bologna', note: 'Big food emporium — great for boxed pasta, balsamic, and edible gifts.' },
+  ],
+  Milan: [
+    { name: 'Galleria Vittorio Emanuele II', cat: 'dept', icon: '🐂', neighborhood: 'Duomo', day: 14, url: 'https://maps.google.com/?q=Galleria+Vittorio+Emanuele+II', note: 'The 1877 glass arcade — luxury flagships + the lucky bull mosaic.' },
+    { name: 'La Rinascente', cat: 'dept', icon: '🏬', neighborhood: 'Duomo', day: 15, url: 'https://maps.google.com/?q=La+Rinascente+Milano', note: 'Flagship department store; tax-free desk + rooftop food hall facing the Duomo.' },
+    { name: 'Quadrilatero della Moda', cat: 'design', icon: '👗', neighborhood: 'Montenapoleone', day: 14, url: 'https://maps.google.com/?q=Quadrilatero+della+Moda+Milano', note: 'The fashion quadrilateral (Via Montenapoleone & around) — peak window-shopping.' },
+    { name: 'Corso Buenos Aires', cat: 'street', icon: '🛍️', neighborhood: 'Porta Venezia', day: 15, url: 'https://maps.google.com/?q=Corso+Buenos+Aires+Milano', note: 'One of Europe\'s longest shopping streets — affordable, high-street brands.' },
+  ],
+};
+
+/* ============================ FOODS_BY_CITY ============================ */
+const FOODS_BY_CITY = {
+  Athens: [
+    { name: 'Souvlaki / Gyros', emoji: '🥙', day: 1, blurb: 'Grilled meat in pita with tomato, onion, tzatziki and fries tucked inside.', where: 'Anywhere — try the lanes off Monastiraki Sq.' },
+    { name: 'Loukoumades', emoji: '🍯', day: 2, blurb: 'Warm honey-soaked fried dough balls — Greek "doughnuts of the gods".', where: 'Lukumades, near Syntagma.' },
+    { name: 'Greek salad (horiatiki)', emoji: '🥗', day: 1, blurb: 'Tomato, cucumber, olives, and a thick slab of feta with olive oil & oregano.', where: 'Every taverna.' },
+    { name: 'Bougatsa', emoji: '🥧', day: 3, blurb: 'Flaky filo pastry filled with sweet custard, dusted with sugar & cinnamon.', where: 'Plaka bakeries.' },
+    { name: 'Frozen Greek yogurt', emoji: '🍦', day: 2, blurb: 'Thick yogurt with honey and walnuts — the healthy(ish) kid treat.', where: 'Fresko / yogurt bars.' },
+  ],
+  Naples: [
+    { name: 'Pizza Margherita', emoji: '🍕', day: 6, blurb: 'Invented here: tomato, mozzarella, basil = the colours of the Italian flag.', where: 'Da Michele or Sorbillo.' },
+    { name: 'Pizza fritta', emoji: '🫓', day: 6, blurb: 'Deep-fried calzone-style pizza stuffed with ricotta and tomato.', where: 'Street stalls, Centro Storico.' },
+    { name: 'Sfogliatella', emoji: '🥐', day: 8, blurb: 'Crunchy shell-shaped pastry with sweet citrus-ricotta filling.', where: 'Any pasticceria.' },
+    { name: 'Cuoppo (fried cup)', emoji: '🍤', day: 8, blurb: 'Paper cone of mixed fried seafood/veg — Naples\' grab-and-go classic.', where: 'Spaccanapoli stalls.' },
+    { name: 'Babà al rum', emoji: '🍰', day: 6, blurb: 'Spongy cake soaked in rum syrup — a Neapolitan obsession.', where: 'Pasticcerie.' },
+  ],
+  Rome: [
+    { name: 'Cacio e pepe', emoji: '🧀', day: 9, blurb: 'Pasta with just pecorino cheese and black pepper — simple and magic.', where: 'Trastevere trattorias.' },
+    { name: 'Carbonara', emoji: '🍝', day: 10, blurb: 'Egg, pecorino, black pepper and crispy guanciale — no cream, ever.', where: 'Roman trattorias.' },
+    { name: 'Supplì', emoji: '🍙', day: 9, blurb: 'Fried rice ball with a melty mozzarella centre — the "telephone wire" pull.', where: 'Pizza-by-the-slice spots.' },
+    { name: 'Pizza al taglio', emoji: '🍕', day: 11, blurb: 'Square Roman pizza sold by weight — point, cut, weigh, go.', where: 'Bakeries everywhere.' },
+    { name: 'Gelato + maritozzo', emoji: '🍨', day: 9, blurb: 'Real gelato, plus the maritozzo: a soft bun split and stuffed with cream.', where: 'Giolitti / artisan gelaterie.' },
+  ],
+  Bologna: [
+    { name: 'Tagliatelle al ragù', emoji: '🍝', day: 12, blurb: 'The real "bolognese": slow meat sauce on flat fresh egg pasta.', where: 'Trattorias off Piazza Maggiore.' },
+    { name: 'Tortellini in brodo', emoji: '🥟', day: 13, blurb: 'Tiny stuffed pasta navels served in golden broth — Bologna\'s soul food.', where: 'Classic osterie.' },
+    { name: 'Mortadella', emoji: '🥩', day: 12, blurb: 'The original (and far superior) "bologna" — silky pink, studded with pistachio.', where: 'Quadrilatero delis.' },
+    { name: 'Parmigiano Reggiano', emoji: '🧀', day: 12, blurb: 'Crumbly, nutty king of cheeses, aged for years. Taste a chunk at a stall.', where: 'Quadrilatero market.' },
+    { name: 'Lasagne verdi', emoji: '🍲', day: 13, blurb: 'Green spinach-pasta lasagne layered with ragù and béchamel.', where: 'Traditional restaurants.' },
+  ],
+  Milan: [
+    { name: 'Risotto alla milanese', emoji: '🍚', day: 14, blurb: 'Creamy saffron risotto, glowing gold — the signature Milanese plate.', where: 'Traditional trattorias.' },
+    { name: 'Cotoletta alla milanese', emoji: '🍖', day: 14, blurb: 'Breaded bone-in veal cutlet, fried golden — a kid-pleasing schnitzel cousin.', where: 'Classic Milanese spots.' },
+    { name: 'Panzerotti (Luini)', emoji: '🫓', day: 14, blurb: 'Fried dough pockets of tomato & mozzarella, eaten on your feet.', where: 'Luini, behind the Duomo.' },
+    { name: 'Panettone', emoji: '🍞', day: 15, blurb: 'Milan\'s tall, fluffy sweet bread with candied fruit — buy a box to take home.', where: 'City bakeries / airport.' },
+    { name: 'Gelato', emoji: '🍦', day: 15, blurb: 'One last cone — Milan has excellent artisan gelaterie around Brera.', where: 'Brera / Navigli.' },
+  ],
+};
+
+/* ============================ MICHELIN_BY_CITY (special / splurge meals) ============================ */
+const MICHELIN_BY_CITY = {
+  Athens: [
+    { id: 'ath-1', stars: 0, name: 'A Little Taste of Home', day: 2, bookWeeks: 1, kidNote: 'Cosy, friendly, great for a relaxed sit-down with a tween.', url: 'https://maps.google.com/?q=A+Little+Taste+of+Home+Athens', note: 'Beloved Plaka spot for a proper Greek meal without fuss.' },
+    { id: 'ath-2', stars: 1, name: 'Spondi (1★, big splurge)', day: 5, bookWeeks: 4, kidNote: 'Grown-up celebration dinner — best if the boy is up for fine dining.', url: 'https://maps.google.com/?q=Spondi+Athens', note: 'Long-running Michelin-starred classic for a special last Athens night.' },
+  ],
+  Naples: [
+    { id: 'nap-1', stars: 0, name: 'Da Michele (pizza temple)', day: 6, bookWeeks: 0, kidNote: 'No reservations, ticket system, electric atmosphere — pure Naples.', url: 'https://maps.google.com/?q=L%27Antica+Pizzeria+da+Michele', note: 'The most famous pizzeria on earth. Two pizzas, a few euros, worth the queue.' },
+    { id: 'nap-2', stars: 0, name: 'Concettina ai Tre Santi', day: 8, bookWeeks: 1, kidNote: 'Inventive pizzas + classic Margherita — a modern Naples pizza star.', url: 'https://maps.google.com/?q=Concettina+ai+Tre+Santi', note: 'Book ahead; Sanità district, great fried starters for sharing.' },
+  ],
+  Rome: [
+    { id: 'rom-1', stars: 0, name: 'Roscioli', day: 10, bookWeeks: 3, kidNote: 'Famous carbonara/cacio e pepe; reserve well ahead — small and busy.', url: 'https://maps.google.com/?q=Roscioli+Rome', note: 'Deli-restaurant beloved for its Roman pastas. Book early.' },
+    { id: 'rom-2', stars: 0, name: 'Pizzarium (Bonci)', day: 11, bookWeeks: 0, kidNote: 'Stand-up pizza al taglio, no booking — top-tier square slices.', url: 'https://maps.google.com/?q=Pizzarium+Bonci+Rome', note: 'Near the Vatican; pick a rainbow of slices for a perfect kid lunch.' },
+  ],
+  Bologna: [
+    { id: 'bol-1', stars: 0, name: 'Trattoria di Via Serra', day: 12, bookWeeks: 3, kidNote: 'Honest, traditional Bolognese cooking; warm and family-friendly.', url: 'https://maps.google.com/?q=Trattoria+di+Via+Serra+Bologna', note: 'Locals\' favourite for ragù and tortellini — reserve ahead.' },
+    { id: 'bol-2', stars: 0, name: 'Osteria dell\'Orsa', day: 13, bookWeeks: 0, kidNote: 'Casual, cheap, no-booking student classic — easy with kids.', url: 'https://maps.google.com/?q=Osteria+dell%27Orsa+Bologna', note: 'Big plates of tagliatelle al ragù; expect a short, fast-moving queue.' },
+  ],
+  Milan: [
+    { id: 'mil-1', stars: 0, name: 'Trattoria Masuelli San Marco', day: 14, bookWeeks: 2, kidNote: 'Old-school Milanese — risotto & cotoletta done right.', url: 'https://maps.google.com/?q=Trattoria+Masuelli+San+Marco+Milano', note: 'Historic family trattoria for the classics. Book ahead.' },
+    { id: 'mil-2', stars: 0, name: 'La Rinascente Food Hall', day: 14, bookWeeks: 0, kidNote: 'Casual rooftop options with a face-to-face Duomo view — kid-flexible.', url: 'https://maps.google.com/?q=La+Rinascente+rooftop+Milano', note: 'No reservation needed; pick a counter and grab the view.' },
+  ],
+};
+
+/* ============================ CITY_COORDS + JUNE_CLIMATE ============================ */
+const CITY_COORDS = {
+  Athens:  [37.9838, 23.7275],
+  Naples:  [40.8518, 14.2681],
+  Rome:    [41.9028, 12.4964],
+  Bologna: [44.4949, 11.3426],
+  Milan:   [45.4642, 9.1900],
+};
+const JUNE_CLIMATE = {
+  Athens:  { hi: 86, lo: 70, icon: '☀️', note: 'Hot & dry, ~2 wet days' },
+  Naples:  { hi: 82, lo: 64, icon: '☀️', note: 'Warm & sunny, ~3 wet days' },
+  Rome:    { hi: 83, lo: 61, icon: '🌤', note: 'Warm, ~3 wet days' },
+  Bologna: { hi: 82, lo: 61, icon: '🌤', note: 'Warm, ~5 wet days' },
+  Milan:   { hi: 81, lo: 63, icon: '⛅', note: 'Warm, ~6 wet days (humid)' },
+};
+
+/* ============================ SHOP_ROUTES (optional walking routes) ============================ */
+const SHOP_ROUTES = {
+  athens: {
+    title: 'Athens Old-Town Browse',
+    note: 'Syntagma → Ermou → Monastiraki → Pandrossou → Plaka · flat, ~1h walking.',
+    stops: { start: 'Syntagma Square, Athens', a: 'Ermou Street, Athens', b: 'Monastiraki Square, Athens', c: 'Pandrossou Street, Athens', end: 'Plaka, Athens' },
+  },
+  naples: {
+    title: 'Naples Centro Storico Walk',
+    note: 'Via Toledo → Spaccanapoli → Via San Gregorio Armeno → Duomo · ~1h, busy & lively.',
+    stops: { start: 'Via Toledo, Naples', a: 'Spaccanapoli, Naples', b: 'Via San Gregorio Armeno, Naples', end: 'Naples Cathedral' },
+  },
+  rome: {
+    title: 'Rome Centro Stroll',
+    note: 'Spanish Steps → Via dei Condotti → Via del Corso → Pantheon → Campo de\' Fiori · ~1h15.',
+    stops: { start: 'Spanish Steps, Rome', a: 'Via dei Condotti, Rome', b: 'Via del Corso, Rome', c: 'Pantheon, Rome', end: 'Campo de Fiori, Rome' },
+  },
+  bologna: {
+    title: 'Bologna Foodie Loop',
+    note: 'Piazza Maggiore → Quadrilatero → Tamburini → Via dell\'Indipendenza · ~45 min under porticoes.',
+    stops: { start: 'Piazza Maggiore, Bologna', a: 'Quadrilatero, Bologna', b: 'Tamburini, Bologna', end: 'Via dell\'Indipendenza, Bologna' },
+  },
+  milan: {
+    title: 'Milan Style Mile',
+    note: 'Duomo → Galleria → Via Montenapoleone → La Rinascente · ~1h, central.',
+    stops: { start: 'Piazza del Duomo, Milan', a: 'Galleria Vittorio Emanuele II, Milan', b: 'Via Montenapoleone, Milan', end: 'La Rinascente, Milano' },
+  },
+};
+
+/* =====================================================================
+   STATE (localStorage only — no cloud sync)
+   ===================================================================== */
+const LS_KEY = 'TRIP_HUB_DATA';
+const defaultState = () => ({
+  checklists: JSON.parse(JSON.stringify(DEFAULT_CHECKLISTS)),
+  bookingsDone: {},
+  tipsRead: {},
+  view: 'today',
+  guideCity: 'Athens',
+  guideTab: 'shops',
+  tipBucket: 'all',
+  phraseLang: 'greek',
+  dark: false,
+  fontScale: 'base',
+});
+let state = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return defaultState();
+    const saved = JSON.parse(raw);
+    return Object.assign(defaultState(), saved);
+  } catch (e) { return defaultState(); }
+}
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const TRIP_START = new Date(TRIP[0].date + 'T00:00:00');
+const TRIP_END = new Date(TRIP[TRIP.length - 1].date + 'T23:59:59');
+
+function todayMidnight() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
+
+// Which trip day is "current"? Clamp to trip range for demo/preview.
+function currentTripDay() {
+  const now = todayMidnight();
+  if (now < TRIP_START) return null;            // before trip
+  if (now > TRIP_END) return 'over';            // after trip
+  const idx = daysBetween(TRIP_START, now);
+  return TRIP[Math.min(idx, TRIP.length - 1)];
+}
+
+function cityCardClass(phase) { return CITY_CELL[phase] || 'bg-stone-100 text-stone-700'; }
+
+function applyChrome() {
+  document.documentElement.classList.toggle('dark', !!state.dark);
+  const fsMap = { sm:'fs-sm', base:'', lg:'fs-lg', xl:'fs-xl' };
+  document.documentElement.classList.remove('fs-sm','fs-lg','fs-xl');
+  if (fsMap[state.fontScale]) document.documentElement.classList.add(fsMap[state.fontScale]);
+}
+
+function headerCountdown() {
+  const now = todayMidnight();
+  const el = $('#hdrCountdown');
+  if (!el) return;
+  if (now < TRIP_START) {
+    const d = daysBetween(now, TRIP_START);
+    el.textContent = d === 0 ? 'Tomorrow!' : `${d} days to go`;
+  } else if (now > TRIP_END) {
+    el.textContent = 'Trip complete ✓';
+  } else {
+    const cd = currentTripDay();
+    el.textContent = cd && cd !== 'over' ? `Day ${cd.day} of ${TRIP.length}` : `In trip`;
+  }
+}
+
+/* =====================================================================
+   WEATHER (open-meteo, no key). Shows climate normals; live if in range.
+   ===================================================================== */
+async function weatherFor(cityName) {
+  const climate = JUNE_CLIMATE[cityName];
+  const coords = CITY_COORDS[cityName];
+  const base = climate
+    ? `<span class="text-2xl">${climate.icon}</span> <span class="font-semibold">${climate.hi}° / ${climate.lo}°F</span> <span class="text-xs opacity-70">June normals · ${esc(climate.note)}</span>`
+    : '';
+  // Only attempt live if the trip is happening now (within ~7 days of dates).
+  const now = todayMidnight();
+  const within = now >= new Date(TRIP_START.getTime() - 7*86400000) && now <= new Date(TRIP_END.getTime() + 86400000);
+  if (!within || !coords) return base;
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords[0]}&longitude=${coords[1]}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`;
+    const r = await fetch(url);
+    const j = await r.json();
+    if (j && j.current) {
+      return `<span class="text-2xl">🌡️</span> <span class="font-semibold">${Math.round(j.current.temperature_2m)}°F now</span> <span class="text-xs opacity-70">live · ${esc(cityName)}</span>`;
+    }
+  } catch (e) {}
+  return base;
+}
+
+/* =====================================================================
+   RENDER: shared bits
+   ===================================================================== */
+function badge(text, cls) { return `<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${cls}">${text}</span>`; }
+
+function destinationsHTML(dests) {
+  if (!dests || !dests.length) return '';
+  return `<div class="mt-3 space-y-2">${dests.map(d => `
+    <a href="${esc(d.url)}" target="_blank" rel="noopener" class="block p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 active:scale-[0.99] transition">
+      <div class="flex items-center justify-between gap-2">
+        <span class="font-serif font-semibold text-[15px]">${esc(d.name)}</span>
+        <span class="text-xs text-sky-600 dark:text-sky-400 shrink-0">open ↗</span>
+      </div>
+      ${d.note ? `<p class="text-[13px] mt-1 opacity-80 leading-snug">${esc(d.note)}</p>` : ''}
+    </a>`).join('')}</div>`;
+}
+
+function dayCardHTML(d, opts = {}) {
+  const phaseCls = PHASE_CLASS[d.departure ? 'departure' : d.phase] || '';
+  const cityTag = badge(esc(d.city), cityCardClass(d.phase));
+  const travel = d.trainBooked ? badge('🚄 ' + esc(d.trainBooked.time), 'bg-stone-200 text-stone-700 dark:bg-stone-700 dark:text-stone-200')
+    : d.flightPlaceholder ? badge('✈️ ' + esc(d.flightTime || 'Flight'), 'bg-stone-200 text-stone-700 dark:bg-stone-700 dark:text-stone-200') : '';
+  const tip = d.soloTip ? `
+    <div class="mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+      <div class="text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">${BUCKETS[d.soloTip.bucket]?.icon || '💡'} ${BUCKETS[d.soloTip.bucket]?.label || 'Tip'}</div>
+      <div class="font-serif font-semibold mt-0.5">${esc(d.soloTip.title)}</div>
+      <p class="text-[13px] opacity-85 leading-snug mt-0.5">${esc(d.soloTip.body)}</p>
+    </div>` : '';
+  return `
+  <div class="day-card ${phaseCls} bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 p-4 fade-in">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-display text-2xl leading-none">DAY ${d.day}</span>
+          ${cityTag}
+        </div>
+        <div class="text-xs opacity-60 mt-0.5">${esc(d.weekday)} · ${esc(d.date)}</div>
+      </div>
+      <div class="text-3xl">${esc(d.flag || '')}</div>
+    </div>
+    <h3 class="font-serif text-lg font-semibold mt-2 leading-tight">${esc(d.title)}</h3>
+    ${travel ? `<div class="mt-2">${travel}</div>` : ''}
+    <div class="mt-3 space-y-2 text-[14px] leading-relaxed">
+      ${d.am ? `<p><span class="font-semibold text-sky-700 dark:text-sky-400">☀️ AM&nbsp;</span>${esc(d.am)}</p>` : ''}
+      ${d.pm ? `<p><span class="font-semibold text-rose-700 dark:text-rose-400">🌆 PM&nbsp;</span>${esc(d.pm)}</p>` : ''}
+    </div>
+    ${d.sleep ? `<p class="text-[13px] mt-2 opacity-75">🛏️ ${esc(d.sleep)}</p>` : ''}
+    ${d.transit ? `<p class="text-[13px] mt-1 opacity-75">🚇 ${esc(d.transit)}</p>` : ''}
+    ${destinationsHTML(d.destinations)}
+    ${tip}
+  </div>`;
+}
+
+/* =====================================================================
+   VIEW: TODAY
+   ===================================================================== */
+async function renderToday() {
+  const cd = currentTripDay();
+  const app = $('#app');
+  if (cd === null) {
+    const d = daysBetween(todayMidnight(), TRIP_START);
+    app.innerHTML = `
+      <div class="text-center py-10 fade-in">
+        <div class="text-6xl mb-3">🧳</div>
+        <div class="font-display text-5xl tracking-wide">${d} DAYS</div>
+        <div class="text-lg opacity-70">until Athens</div>
+        <p class="mt-4 text-sm opacity-70 max-w-sm mx-auto">Trip begins <b>Mon 8 Jun 2026</b>. Tap <b>Days</b> for the full plan, <b>Guide</b> for each city, and <b>Notes</b> for packing + bookings.</p>
+      </div>
+      <h2 class="font-display text-2xl mt-4 mb-2">FIRST UP</h2>
+      ${dayCardHTML(TRIP[0])}`;
+    return;
+  }
+  if (cd === 'over') {
+    app.innerHTML = `
+      <div class="text-center py-10 fade-in">
+        <div class="text-6xl mb-3">🏛️</div>
+        <div class="font-display text-4xl tracking-wide">ARRIVEDERCI!</div>
+        <p class="mt-3 text-sm opacity-70">The trip is complete. Your notes & checklists are still saved on this device.</p>
+      </div>`;
+    return;
+  }
+  const weatherHTML = await weatherFor(cd.city.split(' ')[0]);
+  const next = TRIP.find(t => t.day === cd.day + 1);
+  app.innerHTML = `
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-display text-2xl">TODAY</h2>
+      <div class="text-sm opacity-80">${weatherHTML}</div>
+    </div>
+    ${dayCardHTML(cd)}
+    ${next ? `<h2 class="font-display text-xl mt-5 mb-2 opacity-70">NEXT UP — DAY ${next.day}</h2>${dayCardHTML(next)}` : ''}`;
+}
+
+/* =====================================================================
+   VIEW: DAYS (list + calendar)
+   ===================================================================== */
+function renderCalendar() {
+  // June 2026
+  const year = 2026, month = 5; // 0-indexed: Jun
+  const first = new Date(year, month, 1);
+  const startDow = (first.getDay() + 6) % 7; // Monday-start offset
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const byDate = {};
+  TRIP.forEach(t => { byDate[t.date] = t; });
+  const cells = [];
+  for (let i = 0; i < startDow; i++) cells.push('<div></div>');
+  for (let dn = 1; dn <= daysInMonth; dn++) {
+    const iso = `2026-06-${String(dn).padStart(2,'0')}`;
+    const t = byDate[iso];
+    if (t) {
+      const cls = cityCardClass(t.phase);
+      const marker = t.trainBooked ? '🚄' : t.flightPlaceholder ? '✈️' : '';
+      cells.push(`<div class="aspect-square rounded-lg ${cls} flex flex-col items-center justify-center text-xs font-semibold relative">
+        <span class="absolute top-1 left-1.5 text-[10px] opacity-70">${dn}</span>
+        <span class="text-base leading-none">${esc(t.flag || '')}</span>
+        <span class="text-[9px] mt-0.5">D${t.day}${marker}</span>
+      </div>`);
+    } else {
+      cells.push(`<div class="aspect-square rounded-lg bg-stone-100 dark:bg-stone-800/40 flex items-start justify-start p-1.5 text-[10px] opacity-40">${dn}</div>`);
+    }
+  }
+  const dows = ['M','T','W','T','F','S','S'];
+  const legend = CITIES.map(c => `<span class="inline-flex items-center gap-1 text-[11px]"><span class="w-3 h-3 rounded ${cityCardClass(c.phase)}"></span>${esc(c.city)}</span>`).join('');
+  return `
+    <div class="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 p-4 mb-4 fade-in">
+      <h3 class="font-display text-2xl mb-2">JUNE 2026</h3>
+      <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold opacity-50 mb-1">${dows.map(d=>`<div>${d}</div>`).join('')}</div>
+      <div class="grid grid-cols-7 gap-1">${cells.join('')}</div>
+      <div class="flex flex-wrap gap-x-3 gap-y-1 mt-3">${legend}</div>
+    </div>`;
+}
+
+function renderDays() {
+  const app = $('#app');
+  app.innerHTML = `
+    <h2 class="font-display text-2xl mb-3">THE PLAN</h2>
+    ${renderCalendar()}
+    <div class="space-y-3">${TRIP.map(d => dayCardHTML(d)).join('')}</div>`;
+}
+
+/* =====================================================================
+   VIEW: GUIDE
+   ===================================================================== */
+function gmapsRoute(stops) {
+  const pts = Object.values(stops).map(encodeURIComponent);
+  return `https://www.google.com/maps/dir/${pts.join('/')}`;
+}
+
+function renderGuide() {
+  const app = $('#app');
+  const city = state.guideCity;
+  const phase = CITIES.find(c => c.city === city)?.phase;
+  const cityChips = CITIES.map(c => `
+    <button data-gcity="${c.city}" class="px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap ${c.city===city ? cityCardClass(c.phase)+' chip-active' : 'bg-stone-100 dark:bg-stone-800'}">${esc(c.city)}</button>`).join('');
+  const tabs = [['shops','🛍️ Shops'],['foods','🍝 Food'],['fine','⭐ Eat Out'],['tips','💡 Tips'],['route','🗺️ Route']];
+  const tabBtns = tabs.map(([k,l]) => `
+    <button data-gtab="${k}" class="px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap ${state.guideTab===k ? 'bg-stone-800 text-white dark:bg-white dark:text-stone-900' : 'bg-stone-100 dark:bg-stone-800'}">${l}</button>`).join('');
+
+  let body = '';
+  if (state.guideTab === 'shops') body = guideShops(city);
+  else if (state.guideTab === 'foods') body = guideFoods(city);
+  else if (state.guideTab === 'fine') body = guideFine(city);
+  else if (state.guideTab === 'tips') body = guideTips(phase, city);
+  else if (state.guideTab === 'route') body = guideRoute(phase);
+
+  app.innerHTML = `
+    <h2 class="font-display text-2xl mb-3">CITY GUIDE</h2>
+    <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">${cityChips}</div>
+    <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 mt-1">${tabBtns}</div>
+    <div class="mt-2">${body}</div>`;
+}
+
+function guideShops(city) {
+  const items = (SHOPS_BY_CITY[city] || []);
+  if (!items.length) return `<p class="opacity-60 py-6 text-center">No shops listed yet.</p>`;
+  return items.map(s => `
+    <a href="${esc(s.url)}" target="_blank" rel="noopener" class="block bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-3 fade-in active:scale-[0.99] transition">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl">${esc(s.icon)}</span>
+        <div class="flex-1">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-serif font-semibold">${esc(s.name)}</span>
+            ${badge(SHOP_CAT_LABEL[s.cat]||s.cat, 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300')}
+          </div>
+          <div class="text-[12px] opacity-60 mt-0.5">📍 ${esc(s.neighborhood)} · Day ${s.day}</div>
+          ${s.note ? `<p class="text-[13px] mt-1 opacity-85 leading-snug">${esc(s.note)}</p>` : ''}
+        </div>
+      </div>
+    </a>`).join('');
+}
+
+function guideFoods(city) {
+  const items = (FOODS_BY_CITY[city] || []);
+  if (!items.length) return `<p class="opacity-60 py-6 text-center">No foods listed yet.</p>`;
+  return items.map(f => `
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-3 fade-in">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl">${esc(f.emoji)}</span>
+        <div class="flex-1">
+          <div class="font-serif font-semibold">${esc(f.name)} <span class="text-[11px] font-sans opacity-50">· Day ${f.day}</span></div>
+          <p class="text-[13px] mt-0.5 opacity-85 leading-snug">${esc(f.blurb)}</p>
+          <p class="text-[12px] mt-1 opacity-60">🍽 ${esc(f.where)}</p>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function guideFine(city) {
+  const items = (MICHELIN_BY_CITY[city] || []);
+  if (!items.length) return `<p class="opacity-60 py-6 text-center">No picks yet.</p>`;
+  return items.map(m => `
+    <a href="${esc(m.url)}" target="_blank" rel="noopener" class="block bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-3 fade-in active:scale-[0.99] transition">
+      <div class="flex items-center justify-between gap-2">
+        <span class="font-serif font-semibold">${esc(m.name)}</span>
+        ${m.stars ? badge('★'.repeat(m.stars)+' Michelin', 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300') : badge('Local fave', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300')}
+      </div>
+      <div class="text-[12px] opacity-60 mt-0.5">Day ${m.day} · ${m.bookWeeks ? 'book ~'+m.bookWeeks+'wk ahead' : 'no booking'}</div>
+      ${m.kidNote ? `<p class="text-[13px] mt-1 opacity-85 leading-snug">👦 ${esc(m.kidNote)}</p>` : ''}
+      ${m.note ? `<p class="text-[12px] mt-1 opacity-70 leading-snug">${esc(m.note)}</p>` : ''}
+    </a>`).join('');
+}
+
+function guideTips(phase, city) {
+  const cityDays = TRIP.filter(t => t.phase === phase).map(t => t.day);
+  // bucket filter
+  const bucketChips = ['all', ...Object.keys(BUCKETS)].map(b => `
+    <button data-bucket="${b}" class="px-3 py-1 rounded-full text-xs font-medium ${state.tipBucket===b ? 'bg-stone-800 text-white dark:bg-white dark:text-stone-900' : 'bg-stone-100 dark:bg-stone-800'}">${b==='all'?'All':BUCKETS[b].icon+' '+BUCKETS[b].label}</button>`).join('');
+  let tips = SEED_TIPS.filter(t => cityDays.includes(t.day));
+  if (state.tipBucket !== 'all') tips = tips.filter(t => t.bucket === state.tipBucket);
+  const list = tips.length ? tips.map((t, i) => {
+    const key = `${city}-${t.day}-${i}-${t.title}`;
+    const read = state.tipsRead[key];
+    return `
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-3 fade-in ${read?'opacity-60':''}">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-[11px] font-semibold uppercase tracking-wide opacity-60">${BUCKETS[t.bucket].icon} ${BUCKETS[t.bucket].label} · Day ${t.day}</span>
+        <button data-tipread="${esc(key)}" class="text-xs ${read?'text-emerald-600':'opacity-50'}">${read?'✓ read':'mark read'}</button>
+      </div>
+      <div class="font-serif font-semibold mt-1">${esc(t.title)}</div>
+      <p class="text-[13px] mt-0.5 opacity-85 leading-snug">${esc(t.body)}</p>
+      <div class="flex items-center gap-3 mt-1.5 text-[12px] opacity-60">
+        ${t.neighborhood?`<span>📍 ${esc(t.neighborhood)}</span>`:''}
+        ${t.url?`<a href="${esc(t.url)}" target="_blank" rel="noopener" class="text-sky-600 dark:text-sky-400">link ↗</a>`:''}
+      </div>
+    </div>`;
+  }).join('') : `<p class="opacity-60 py-6 text-center">No tips in this filter.</p>`;
+  return `<div class="flex gap-2 flex-wrap mb-3">${bucketChips}</div>${list}`;
+}
+
+function guideRoute(phase) {
+  const r = SHOP_ROUTES[phase];
+  if (!r) return `<p class="opacity-60 py-6 text-center">No route for this city.</p>`;
+  const stopList = Object.values(r.stops).map((addr, i, arr) => `
+    <li class="flex items-start gap-2 text-[13px]">
+      <span class="shrink-0 w-5 h-5 rounded-full bg-stone-200 dark:bg-stone-700 text-[10px] flex items-center justify-center font-bold">${i+1}</span>
+      <span>${esc(addr)}</span>
+    </li>`).join('');
+  return `
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 fade-in">
+      <h3 class="font-serif text-lg font-semibold">${esc(r.title)}</h3>
+      <p class="text-[13px] opacity-75 mt-1">${esc(r.note)}</p>
+      <ul class="mt-3 space-y-2">${stopList}</ul>
+      <a href="${gmapsRoute(r.stops)}" target="_blank" rel="noopener" class="block text-center mt-4 py-2.5 rounded-xl bg-sky-600 text-white font-semibold active:scale-[0.99] transition">Open full route in Google Maps ↗</a>
+    </div>
+    <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4 mt-3">
+      <h4 class="font-semibold text-emerald-800 dark:text-emerald-300 text-sm">💶 Tax-free shopping (non-EU)</h4>
+      <p class="text-[13px] mt-1 opacity-85 leading-snug">Spend over the local minimum (€70–155 depending on country) in one store and ask for a <b>Tax Free</b> form + receipt. Get it stamped at your final EU airport (Milan) before checking bags to claim the VAT refund (up to ~15%).</p>
+    </div>`;
+}
+
+/* =====================================================================
+   VIEW: NOTES (checklists, bookings, phrases)
+   ===================================================================== */
+function renderNotes() {
+  const app = $('#app');
+  app.innerHTML = `
+    <h2 class="font-display text-2xl mb-3">NOTES</h2>
+    ${checklistHTML('packing')}
+    ${checklistHTML('pretrip')}
+    ${bookingsHTML()}
+    ${phrasesHTML()}`;
+}
+
+function checklistHTML(key) {
+  const cl = state.checklists[key];
+  const done = cl.items.filter(i => i.checked).length;
+  const rows = cl.items.map((it, i) => `
+    <label class="flex items-start gap-3 py-2 border-b border-stone-100 dark:border-stone-800 last:border-0 cursor-pointer">
+      <input type="checkbox" data-check="${key}:${i}" ${it.checked?'checked':''} class="mt-1 w-5 h-5 rounded accent-sky-600 shrink-0">
+      <span class="text-[14px] ${it.checked?'line-through opacity-50':''}">${esc(it.text)}</span>
+    </label>`).join('');
+  return `
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-4 fade-in">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="font-serif text-lg font-semibold">${esc(cl.title)}</h3>
+        <span class="text-xs opacity-60">${done}/${cl.items.length}</span>
+      </div>
+      ${rows}
+    </div>`;
+}
+
+function bookingsHTML() {
+  const now = todayMidnight();
+  const rows = BOOKINGS_CATALOG.slice().sort((a,b)=>a.forDay-b.forDay).map(b => {
+    const done = !!state.bookingsDone[b.id];
+    const dayObj = TRIP.find(t => t.day === b.forDay);
+    const eventDate = dayObj ? new Date(dayObj.date + 'T00:00:00') : null;
+    const bookBy = eventDate ? new Date(eventDate.getTime() - b.leadDays*86400000) : null;
+    let urgency = '';
+    if (!done && bookBy) {
+      const dleft = daysBetween(now, bookBy);
+      if (dleft < 0) urgency = badge('book NOW', 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300');
+      else if (dleft <= 7) urgency = badge(`book within ${dleft}d`, 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300');
+      else urgency = badge(`by ${bookBy.toISOString().slice(0,10)}`, 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300');
+    }
+    return `
+    <div class="flex items-start gap-3 py-2.5 border-b border-stone-100 dark:border-stone-800 last:border-0">
+      <input type="checkbox" data-booking="${b.id}" ${done?'checked':''} class="mt-1 w-5 h-5 rounded accent-emerald-600 shrink-0">
+      <div class="flex-1">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[14px] font-medium ${done?'line-through opacity-50':''}">${esc(b.icon)} ${esc(b.title)}</span>
+        </div>
+        <div class="flex items-center gap-2 mt-1 flex-wrap">
+          <span class="text-[11px] opacity-60">for Day ${b.forDay}</span>
+          ${done ? badge('✓ booked','bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300') : urgency}
+          <a href="${esc(b.url)}" target="_blank" rel="noopener" class="text-[12px] text-sky-600 dark:text-sky-400">book ↗</a>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  return `
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-4 fade-in">
+      <h3 class="font-serif text-lg font-semibold mb-1">⏰ Time-critical bookings</h3>
+      <p class="text-[12px] opacity-60 mb-2">Reminders count back from each day. Acropolis & Colosseum slots and the cheap train fares go fast — book early!</p>
+      ${rows}
+    </div>`;
+}
+
+function phrasesHTML() {
+  const isGreek = state.phraseLang === 'greek';
+  const list = (isGreek ? GREEK_PHRASES : ITALIAN_PHRASES).map(p => `
+    <div class="py-2 border-b border-stone-100 dark:border-stone-800 last:border-0">
+      <div class="flex items-baseline justify-between gap-2">
+        <span class="font-serif font-semibold text-[15px]">${esc(p.loc)}</span>
+        <span class="text-[12px] opacity-60 italic shrink-0">${esc(p.pron)}</span>
+      </div>
+      <div class="text-[13px] opacity-75">${esc(p.en)}</div>
+    </div>`).join('');
+  return `
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-4 fade-in">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-serif text-lg font-semibold">🗣️ Phrases</h3>
+        <div class="flex gap-1 bg-stone-100 dark:bg-stone-800 rounded-full p-1">
+          <button data-lang="greek" class="px-3 py-1 rounded-full text-xs font-medium ${isGreek?'bg-white dark:bg-stone-700 shadow':''}">🇬🇷 Greek</button>
+          <button data-lang="italian" class="px-3 py-1 rounded-full text-xs font-medium ${!isGreek?'bg-white dark:bg-stone-700 shadow':''}">🇮🇹 Italian</button>
+        </div>
+      </div>
+      ${list}
+    </div>`;
+}
+
+/* =====================================================================
+   VIEW: SETTINGS (no cloud sign-in — local only + export/import)
+   ===================================================================== */
+function renderSettings() {
+  const app = $('#app');
+  app.innerHTML = `
+    <h2 class="font-display text-2xl mb-3">SETTINGS</h2>
+
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-4 fade-in">
+      <div class="flex items-center justify-between py-2">
+        <span class="font-medium">🌙 Dark mode</span>
+        <button id="toggleDark" class="w-12 h-7 rounded-full transition relative ${state.dark?'bg-sky-600':'bg-stone-300'}">
+          <span class="absolute top-1 ${state.dark?'left-6':'left-1'} w-5 h-5 bg-white rounded-full transition-all"></span>
+        </button>
+      </div>
+      <div class="py-2">
+        <div class="font-medium mb-2">🔤 Text size</div>
+        <div class="flex gap-2">
+          ${['sm','base','lg','xl'].map(s=>`<button data-fs="${s}" class="flex-1 py-2 rounded-xl text-sm font-medium ${state.fontScale===s?'bg-sky-600 text-white':'bg-stone-100 dark:bg-stone-800'}">${({sm:'A−',base:'A',lg:'A+',xl:'A++'})[s]}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-4 fade-in">
+      <h3 class="font-serif text-lg font-semibold mb-1">💾 Your data</h3>
+      <p class="text-[13px] opacity-70 mb-3">Everything (checklists, bookings) is stored <b>on this device only</b> — no account, no cloud. To move it to another phone, export here and import there.</p>
+      <div class="flex gap-2">
+        <button id="exportData" class="flex-1 py-2.5 rounded-xl bg-stone-800 text-white dark:bg-white dark:text-stone-900 font-semibold text-sm">⬇️ Export</button>
+        <button id="importData" class="flex-1 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 font-semibold text-sm">⬆️ Import</button>
+      </div>
+      <input id="importFile" type="file" accept="application/json" class="hidden">
+      <button id="resetData" class="w-full mt-2 py-2.5 rounded-xl text-rose-600 font-medium text-sm">↺ Reset checklists & bookings</button>
+    </div>
+
+    <div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 mb-4 fade-in">
+      <h3 class="font-serif text-lg font-semibold mb-1">📲 Install</h3>
+      <p class="text-[13px] opacity-70">Add to your home screen for a full-screen, offline app: in Safari tap <b>Share → Add to Home Screen</b>; on Android use the browser menu → <b>Install app</b>.</p>
+    </div>
+
+    <p class="text-center text-[11px] opacity-40 mt-6 mb-2">Athens → Naples → Rome → Bologna → Milan · Sep 2026<br>Built for Kevin & son · static, offline-first, no tracking.</p>`;
+}
+
+/* =====================================================================
+   ROUTER + EVENTS
+   ===================================================================== */
+function render() {
+  applyChrome();
+  headerCountdown();
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    const active = b.dataset.nav === state.view;
+    b.classList.toggle('text-sky-600', active);
+    b.classList.toggle('dark:text-sky-400', active);
+    b.classList.toggle('opacity-50', !active);
+  });
+  const v = state.view;
+  if (v === 'today') renderToday();
+  else if (v === 'days') renderDays();
+  else if (v === 'guide') renderGuide();
+  else if (v === 'notes') renderNotes();
+  else if (v === 'settings') renderSettings();
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-nav],[data-gcity],[data-gtab],[data-bucket],[data-lang],[data-fs],[data-tipread],#toggleDark,#exportData,#importData,#resetData');
+  if (!t) return;
+
+  if (t.dataset.nav) { state.view = t.dataset.nav; save(); render(); }
+  else if (t.dataset.gcity) { state.guideCity = t.dataset.gcity; save(); renderGuide(); }
+  else if (t.dataset.gtab) { state.guideTab = t.dataset.gtab; save(); renderGuide(); }
+  else if (t.dataset.bucket) { state.tipBucket = t.dataset.bucket; save(); renderGuide(); }
+  else if (t.dataset.lang) { state.phraseLang = t.dataset.lang; save(); renderNotes(); }
+  else if (t.dataset.fs) { state.fontScale = t.dataset.fs; save(); render(); }
+  else if (t.dataset.tipread) { const k = t.dataset.tipread; state.tipsRead[k] = !state.tipsRead[k]; save(); renderGuide(); }
+  else if (t.id === 'toggleDark') { state.dark = !state.dark; save(); render(); }
+  else if (t.id === 'exportData') { exportData(); }
+  else if (t.id === 'importData') { $('#importFile').click(); }
+  else if (t.id === 'resetData') { if (confirm('Reset all checklists and booking checkmarks? Your other settings stay.')) { state.checklists = JSON.parse(JSON.stringify(DEFAULT_CHECKLISTS)); state.bookingsDone = {}; state.tipsRead = {}; save(); render(); } }
+});
+
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.dataset && t.dataset.check) {
+    const [key, i] = t.dataset.check.split(':');
+    state.checklists[key].items[+i].checked = t.checked;
+    save();
+    // update the count without full re-render flicker
+    renderNotes();
+  } else if (t.dataset && t.dataset.booking) {
+    state.bookingsDone[t.dataset.booking] = t.checked;
+    save(); renderNotes();
+  } else if (t.id === 'importFile') {
+    const file = t.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        state = Object.assign(defaultState(), data);
+        save(); render();
+        alert('Data imported ✓');
+      } catch (err) { alert('Could not read that file.'); }
+    };
+    reader.readAsText(file);
+  }
+});
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'kevinitaly-trip-data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- PWA service worker ---------- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+/* ---------- boot ---------- */
+render();
+</script>
+</body>
+</html>
