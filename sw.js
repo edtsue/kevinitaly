@@ -1,5 +1,5 @@
 /* Simple offline-first service worker — no build, no cloud. */
-const CACHE = 'athens-milan-v1';
+const CACHE = 'athens-milan-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (e) => {
